@@ -331,6 +331,7 @@ void PTC_Handler                 ( void );
 #include "instance/sercom1.h"
 #include "instance/sercom2.h"
 #include "instance/sercom3.h"
+#include "instance/sercom5.h"
 #include "instance/supc.h"
 #include "instance/tal.h"
 #include "instance/tc0.h"

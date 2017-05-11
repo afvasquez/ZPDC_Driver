@@ -52,6 +52,9 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
+// From module: CAN - Control Area Network Controller
+#include <can.h>
+
 // From module: Common SAM0 compiler driver
 #include <compiler.h>
 #include <status_codes.h>
@@ -59,14 +62,42 @@
 // From module: Common build items for user board support templates
 #include <user_board.h>
 
+// From module: DIVAS - Divide and Square Root Accelerator (Overload APIs)
+#include <divas.h>
+
+// From module: FreeRTOS - kernel 8.0.1
+#include <FreeRTOS.h>
+#include <StackMacros.h>
+#include <croutine.h>
+#include <event_groups.h>
+#include <list.h>
+#include <mpu_wrappers.h>
+#include <portable.h>
+#include <projdefs.h>
+#include <queue.h>
+#include <semphr.h>
+#include <task.h>
+#include <timers.h>
+
 // From module: Generic board support
 #include <board.h>
 
 // From module: Interrupt management - SAM implementation
 #include <interrupt.h>
 
+// From module: PORT - GPIO Pin Control
+#include <port.h>
+
 // From module: Part identification macros
 #include <parts.h>
+
+// From module: SERCOM Callback API
+#include <sercom.h>
+#include <sercom_interrupt.h>
+
+// From module: SERCOM USART - Serial Communications (Callback APIs)
+#include <usart.h>
+#include <usart_interrupt.h>
 
 // From module: SYSTEM - Clock Management for SAMC20/C21
 #include <clock.h>

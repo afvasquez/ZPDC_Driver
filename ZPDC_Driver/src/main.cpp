@@ -2,20 +2,16 @@
  * ZPDC_Driver.cpp
  *
  * Created: 5/11/2017 9:37:54 AM
- * Author : avasquez
+ * Author : Andres Vasquez
  */ 
-
-
-#include "sam.h"
+#include <asf.h>
 
 
 int main(void)
 {
     /* Initialize the SAM system */
-    SystemInit();
+    system_init();
 
     /* Replace with your application code */
-    while (1) 
-    {
-    }
+    vTaskStartScheduler();
 }
