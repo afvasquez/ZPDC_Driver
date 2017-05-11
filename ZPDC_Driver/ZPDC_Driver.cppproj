@@ -525,7 +525,7 @@
     <Compile Include="Device_Startup\system_samc21.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="main.cpp">
+    <Compile Include="src\main.cpp">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\asf.h">
@@ -591,16 +591,7 @@
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\instance\mclk.h">
       <SubType>compile</SubType>
     </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21j18a.h">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\instance\ccl.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21j16a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21j17a.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\instance\tcc2.h">
@@ -609,25 +600,13 @@
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21e18a.h">
       <SubType>compile</SubType>
     </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21e17a.h">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\instance\tc2.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21e16a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21e15a.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\utils\preprocessor\mrepeat.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\component\dmac.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21j15a.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\instance\tcc1.h">
@@ -645,34 +624,10 @@
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21.h">
       <SubType>compile</SubType>
     </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21g18a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21g16a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21g17a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21g18a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21g15a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21g17a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21g16a.h">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\component\oscctrl.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\component\mtb.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21g15a.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\component\ac.h">
@@ -807,22 +762,10 @@
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\component\divas.h">
       <SubType>compile</SubType>
     </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21j18a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21j17a.h">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\component\port.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\component\mclk.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21j16a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\samc21j15a.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\component\evsys.h">
@@ -868,15 +811,6 @@
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\thirdparty\CMSIS\Include\core_cm0plus.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21e17a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21e16a.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\utils\cmsis\samc21\include\pio\samc21e15a.h">
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\utils\cmsis\samc21\include\instance\tc4.h">
@@ -973,9 +907,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\sam0\utils\syscalls\gcc\syscalls.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\main.c">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
