@@ -65,6 +65,9 @@
 // From module: DIVAS - Divide and Square Root Accelerator (Overload APIs)
 #include <divas.h>
 
+// From module: EEPROM Emulator Service
+#include <eeprom.h>
+
 // From module: FreeRTOS - kernel 8.0.1
 #include <FreeRTOS.h>
 #include <StackMacros.h>
@@ -84,6 +87,9 @@
 
 // From module: Interrupt management - SAM implementation
 #include <interrupt.h>
+
+// From module: NVM - Non-Volatile Memory
+#include <nvm.h>
 
 // From module: PORT - GPIO Pin Control
 #include <port.h>

@@ -46,7 +46,7 @@
 #  define CONF_CLOCKS_H_INCLUDED
 
 /* System clock bus configuration */
-#  define CONF_CLOCK_FLASH_WAIT_STATES            0
+#  define CONF_CLOCK_FLASH_WAIT_STATES            1
 #  define CONF_CLOCK_CPU_DIVIDER                  SYSTEM_MAIN_CLOCK_DIV_1
 
 /* SYSTEM_CLOCK_SOURCE_OSC48M configuration - Internal 48MHz oscillator */
