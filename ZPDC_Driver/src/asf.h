@@ -118,4 +118,9 @@
 // From module: SYSTEM - Reset Management for SAM C20/C21
 #include <reset.h>
 
+// User addition: Header Safety
+#include "zpdc_system.h"
+#include "zpdc_oop_task.h"
+#include "zpdc_can.h"
+
 #endif // ASF_H
