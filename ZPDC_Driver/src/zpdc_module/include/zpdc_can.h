@@ -17,11 +17,18 @@
 #define CAN_DISCOVERY_RETURN	(uint8_t)('a')
 	/********************************************************************/
 #define CAN_SUBNET_NETWORK_REQUEST	((uint8_t) 0)
+#define CAN_SUBNET_PARAMETER_SETUP	((uint8_t) 2)
 #define CAN_SUBNET_ZPDC_OPERATION	((uint8_t) 3)
+
+#define CAN_DEVICE_GATEWAY			((uint8_t) 0)
+#define CAN_DEVICE_HYBRID			((uint8_t) 2)
+#define CAN_DEVICE_DRIVE_CARD		((uint8_t) 3)
+
 #define CAN_BUFFER_0				((uint8_t) 0)
 #define CAN_BUFFER_1				((uint8_t) 1)
 
-#define CAN_RX_FIFO_ID_SUBNET(value)	(uint8_t)((0x7FFul & ((value) >> (CAN_TX_ELEMENT_T0_STANDARD_ID_Pos + 7))))
+#define CAN_RX_FIFO_ID_SUBNET(value)	(uint8_t)((0x03ul & ((value) >> (CAN_TX_ELEMENT_T0_STANDARD_ID_Pos + 7))))
+#define CAN_RX_FIFO_ID_DEVICE(value)	(uint8_t)((0x03ul & ((value) >> (CAN_TX_ELEMENT_T0_STANDARD_ID_Pos + 9))))
 
 /************************************************************************/
 /*  TYPE DEFINITIONS FOR NETWORK DEVICE TABLE                           */
@@ -60,7 +67,7 @@ public:
 
 	can_service(CanConfiguration_CAN0 config, ZpdcSystem *system_module);
 
-	void send(uint8_t length, uint8_t sub_net, uint8_t buffer);
+	void send(uint8_t length, uint8_t device, uint8_t sub_net, uint8_t buffer);
 
 	void task(void);
 
