@@ -68,11 +68,13 @@
  void can_service::callback(void) {
 	BaseType_t xHigherPriorityWoken = pdFALSE;
 	uint32_t status = can_read_interrupt_status(&can0_instance);
+	bool is_can_to_send = false;
 
 	if (!(status & CAN_RX_FIFO_0_NEW_MESSAGE) && !(status & CAN_TX_EVENT_FIFO_NEW_ENTRY)) {
 		can_clear_interrupt_status(&can0_instance, CAN_RX_FIFO_0_NEW_MESSAGE);
 	}
 
+	is_can_to_send = false;
 	if (status & CAN_RX_FIFO_0_NEW_MESSAGE) {
 		can_clear_interrupt_status(&can0_instance, CAN_RX_FIFO_0_NEW_MESSAGE);
 
@@ -82,14 +84,29 @@
 		uint8_t sub_net = CAN_RX_FIFO_ID_SUBNET(rx_element_fifo_0.R0.reg);
 		if(sub_net == CAN_SUBNET_NETWORK_REQUEST) {
 			switch(rx_element_fifo_0.data[0]) {
+				case CAN_ORDER_UPDATE_REQUEST:
+					if (rx_element_fifo_0.data[1] == system_data->get_uid_high() && rx_element_fifo_0.data[2] == system_data->get_uid_low())
+						{ system_data->set_address(rx_element_fifo_0.data[3]); system_data->set_role(rx_element_fifo_0.data[4]); is_can_to_send = true; }
+					tx_message_0[0] = CAN_ORDER_UPDATE_RETURN;
 				case CAN_DISCOVERY_REQUEST:
-					port_pin_toggle_output_level(LED_WARNING);
-					tx_message_0[0] = CAN_DISCOVERY_RETURN;
+					//port_pin_toggle_output_level(LED_WARNING);
+					if (rx_element_fifo_0.data[0] == CAN_DISCOVERY_REQUEST) { tx_message_0[0] = CAN_DISCOVERY_RETURN; is_can_to_send = true; }
 					tx_message_0[1] = system_data->get_uid_high();
 					tx_message_0[2] = system_data->get_uid_low();
 					tx_message_0[3] = system_data->get_address();
-					send(4, CAN_DEVICE_DRIVE_CARD, CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
-					port_pin_toggle_output_level(LED_WARNING);
+					if(is_can_to_send) send(4, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
+					//port_pin_toggle_output_level(LED_WARNING);
+				break;
+				case CAN_REQUEST_LED_TOG:
+					if (rx_element_fifo_0.data[1] == system_data->get_uid_high() && rx_element_fifo_0.data[2] == system_data->get_uid_low()) {
+						port_pin_toggle_output_level(LED_ACTIVITY);
+						tx_message_0[0] = CAN_REQUEST_LED_TOG_RETURN;
+						tx_message_0[1] = system_data->get_uid_high();
+						tx_message_0[2] = system_data->get_uid_low();
+						tx_message_0[3] = (port_pin_get_output_level(LED_ACTIVITY) ? 0x01 : 0x00);
+						send(4, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
+						//port_pin_set_output_level(PIN_PA03, false);
+					}
 				break;
 				case CAN_DISCOVERY_RETURN: {
 					/*uint32_t i_data = (uint32_t)((uint32_t)(rx_element_fifo_0.data[1] << 16) | (uint32_t)(rx_element_fifo_0.data[2] << 8) | (uint32_t)(rx_element_fifo_0.data[3]));

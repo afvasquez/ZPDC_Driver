@@ -10,6 +10,7 @@
 #define ZPDC_SYSTEM_H_
 #ifdef __cplusplus
 
+#define LED_ACTIVITY	PIN_PA17
 #define LED_WARNING		PIN_PA18
 #define LED_ERROR		PIN_PA19
 
@@ -34,9 +35,10 @@ class ZpdcSystem {
 				result_code = eeprom_emulator_init();
 				if ( result_code != STATUS_ERR_BAD_FORMAT ) uid_setup();
 			}
-			} else if ( result_code == STATUS_OK ) {
+		} else if ( result_code == STATUS_OK ) {
 			while ((uid = read_uid()) == 0xFFFF ) uid_setup();
-			net_address = read_address();
+				net_address = read_address();
+				role = read_role();
 			} else while (true) {  }	// LOCK if EEPROM error
 
 			queue_to_can = xQueueCreate(1, sizeof(uint32_t) );
@@ -46,7 +48,7 @@ class ZpdcSystem {
 			pin_output.direction = PORT_PIN_DIR_OUTPUT;
 			port_pin_set_config(LED_WARNING, &pin_output);
 			port_pin_set_config(LED_ERROR, &pin_output);
-			//port_pin_set_config(PIN_PA04, &pin_output);
+			port_pin_set_config(LED_ACTIVITY, &pin_output);
 		}
 
 		// ETHERNET - CAN Queue
@@ -71,9 +73,27 @@ class ZpdcSystem {
 		uint8_t get_uid_low(void) { return (uint8_t)(uid & 0xFF); }
 
 		uint8_t get_address(void) { return net_address; }
-		private:
-		uint16_t uid;
-		uint8_t net_address;
+		uint8_t get_role(void) { return role; }
+		void set_address(uint8_t order) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			net_address = order;
+			eeprom_emulator_read_page(0, page_data);
+			page_data[2] = order;
+			eeprom_emulator_write_page(0,page_data);
+			eeprom_emulator_commit_page_buffer();	// END UID EEPROM STORAGE
+		}
+		void set_role(uint8_t p_role) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			role = p_role;
+			eeprom_emulator_read_page(0, page_data);
+			page_data[3] = p_role;
+			eeprom_emulator_write_page(0,page_data);
+			eeprom_emulator_commit_page_buffer();	// END UID EEPROM STORAGE
+		}
+private:
+	uint16_t uid;
+	uint8_t net_address;
+	uint8_t role;
 
 		// Remap a pseudo-unique ID by hashing a 128-bit value to 16-bit
 		void uid_setup(void) {
@@ -91,6 +111,7 @@ class ZpdcSystem {
 			eeprom_emulator_read_page(0, page_data);
 			page_data[0] = (uint8_t)(uid & 0x00FF);
 			page_data[1] = (uint8_t)(uid >> 8);
+			page_data[3] = 0x03;
 			eeprom_emulator_write_page(0,page_data);
 			eeprom_emulator_commit_page_buffer();	// END UID EEPROM STORAGE
 		}
@@ -103,6 +124,11 @@ class ZpdcSystem {
 			uint8_t page_data[EEPROM_PAGE_SIZE];
 			eeprom_emulator_read_page(0, page_data);
 			return (uint8_t)page_data[2];
+		}
+		uint8_t read_role(void) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			eeprom_emulator_read_page(0, page_data);
+			return (uint8_t)page_data[3];
 		}
 	};
 

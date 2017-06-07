@@ -12,9 +12,13 @@
 /************************************************************************/
 /*  TYPE DEFINITIONS FOR NETWORK DEVICE TABLE                           */
 /************************************************************************/
-#define CAN_DISCOVERY_REQUEST	(uint8_t)('A')
-	// Return Values
-#define CAN_DISCOVERY_RETURN	(uint8_t)('a')
+#define CAN_DISCOVERY_REQUEST		(uint8_t)('A')
+#define CAN_ORDER_UPDATE_REQUEST	(uint8_t)('B')
+#define CAN_REQUEST_LED_TOG			(uint8_t)('C')
+// Return Values
+#define CAN_DISCOVERY_RETURN		(uint8_t)('a')
+#define CAN_ORDER_UPDATE_RETURN		(uint8_t)('b')
+#define CAN_REQUEST_LED_TOG_RETURN	(uint8_t)('c')
 	/********************************************************************/
 #define CAN_SUBNET_NETWORK_REQUEST	((uint8_t) 0)
 #define CAN_SUBNET_PARAMETER_SETUP	((uint8_t) 2)
