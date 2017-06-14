@@ -14,6 +14,8 @@
 #define LED_WARNING		PIN_PA18
 #define LED_ERROR		PIN_PA19
 
+void extint_callback_wrapper(void);
+
 /* System Data */
 class ZpdcSystem {
 	public:
@@ -37,19 +39,20 @@ class ZpdcSystem {
 			}
 		} else if ( result_code == STATUS_OK ) {
 			while ((uid = read_uid()) == 0xFFFF ) uid_setup();
-				net_address = read_address();
-				role = read_role();
-			} else while (true) {  }	// LOCK if EEPROM error
+			while (read_boolean_subpage(4) & 0x80) setup_boolean_subpage(4);
+			net_address = read_address();
+			role = read_role();
+		} else while (true) {  }	// LOCK if EEPROM error
 
-			queue_to_can = xQueueCreate(1, sizeof(uint32_t) );
+		queue_to_can = xQueueCreate(1, sizeof(uint32_t) );
 
-			struct port_config pin_output;
-			port_get_config_defaults(&pin_output);
-			pin_output.direction = PORT_PIN_DIR_OUTPUT;
-			port_pin_set_config(LED_WARNING, &pin_output);
-			port_pin_set_config(LED_ERROR, &pin_output);
-			port_pin_set_config(LED_ACTIVITY, &pin_output);
-		}
+		struct port_config pin_output;
+		port_get_config_defaults(&pin_output);
+		pin_output.direction = PORT_PIN_DIR_OUTPUT;
+		port_pin_set_config(LED_WARNING, &pin_output);
+		port_pin_set_config(LED_ERROR, &pin_output);
+		port_pin_set_config(LED_ACTIVITY, &pin_output);
+	}
 
 		// ETHERNET - CAN Queue
 		QueueHandle_t queue_to_can;
@@ -90,6 +93,19 @@ class ZpdcSystem {
 			eeprom_emulator_write_page(0,page_data);
 			eeprom_emulator_commit_page_buffer();	// END UID EEPROM STORAGE
 		}
+		void set_boolean_subpage_bit(uint8_t subpage, uint8_t position, bool value) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			eeprom_emulator_read_page(0, page_data);
+			page_data[subpage] = (value ? (page_data[subpage] | (1 << position)) : (page_data[subpage] & ~(1 << position)) );
+			eeprom_emulator_write_page(0,page_data);
+			eeprom_emulator_commit_page_buffer();	// END UID EEPROM STORAGE
+		}
+		bool get_boolean_subpage_bit(uint8_t subpage, uint8_t position) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			eeprom_emulator_read_page(0, page_data);
+			if (page_data[subpage] & (1 << position)) return true;
+			else return false;
+		}
 private:
 	uint16_t uid;
 	uint8_t net_address;
@@ -129,6 +145,18 @@ private:
 			uint8_t page_data[EEPROM_PAGE_SIZE];
 			eeprom_emulator_read_page(0, page_data);
 			return (uint8_t)page_data[3];
+		}
+		uint8_t read_boolean_subpage(uint8_t subpage) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			eeprom_emulator_read_page(0, page_data);
+			return (uint8_t)page_data[subpage];
+		}
+		void setup_boolean_subpage(uint8_t subpage) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			eeprom_emulator_read_page(0, page_data);
+			page_data[subpage] = 0;
+			eeprom_emulator_write_page(0,page_data);
+			eeprom_emulator_commit_page_buffer();	// END UID EEPROM STORAGE
 		}
 	};
 

@@ -68,6 +68,10 @@
 // From module: EEPROM Emulator Service
 #include <eeprom.h>
 
+// From module: EXTINT - External Interrupt (Callback APIs)
+#include <extint.h>
+#include <extint_callback.h>
+
 // From module: FreeRTOS - kernel 8.0.1
 #include <FreeRTOS.h>
 #include <StackMacros.h>
@@ -97,14 +101,6 @@
 // From module: Part identification macros
 #include <parts.h>
 
-// From module: SERCOM Callback API
-#include <sercom.h>
-#include <sercom_interrupt.h>
-
-// From module: SERCOM USART - Serial Communications (Callback APIs)
-#include <usart.h>
-#include <usart_interrupt.h>
-
 // From module: SYSTEM - Clock Management for SAMC20/C21
 #include <clock.h>
 #include <gclk.h>
@@ -124,9 +120,14 @@
 // From module: SYSTEM - Reset Management for SAM C20/C21
 #include <reset.h>
 
+// From module: TCC - Timer Counter for Control Applications (Callback APIs)
+#include <tcc.h>
+#include <tcc_callback.h>
+
 // User addition: Header Safety
 #include "zpdc_system.h"
 #include "zpdc_oop_task.h"
 #include "zpdc_can.h"
+#include "zpdc_bldc.h"
 
 #endif // ASF_H

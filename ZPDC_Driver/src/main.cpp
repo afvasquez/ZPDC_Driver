@@ -6,22 +6,29 @@
  */ 
 #include <asf.h>
 
-can_service *Object;
+can_service *Can_Object;
+motor_controller *Motor_Object;
 
 int main(void)
 {
     /* Initialize the SAM system */
     system_init();
-
 	ZpdcSystem system_data;
 
 	can_service can_obj(zpdc_can0_configuration, &system_data);
-	Object = &can_obj;
+	Can_Object = &can_obj;
+
+	motor_controller bldc_motor(&system_data, &motor_one_parameters);
+	Motor_Object = &bldc_motor;
 
     /* Replace with your application code */
     vTaskStartScheduler();
 }
 
 void CAN0_Handler(void) {
-	Object->callback();
+	Can_Object->callback();
+}
+
+void extint_callback_wrapper(void) {
+	Motor_Object->hall_callback();
 }

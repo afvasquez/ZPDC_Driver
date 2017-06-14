@@ -1,9 +1,9 @@
 /**
  * \file
  *
- * \brief SAM Serial Peripheral Interface Driver
+ * \brief SAM TCC - Timer Counter for Control Applications Callback Driver
  *
- * Copyright (C) 2012-2015 Atmel Corporation. All rights reserved.
+ * Copyright (C) 2013-2015 Atmel Corporation. All rights reserved.
  *
  * \asf_license_start
  *
@@ -44,75 +44,50 @@
  * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
 
-#ifndef SERCOM_H_INCLUDED
-#define SERCOM_H_INCLUDED
 
-#include <compiler.h>
-#include <system.h>
-#include <clock.h>
+#ifndef TCC_CALLBACK_H_INCLUDED
+#define TCC_CALLBACK_H_INCLUDED
+
+#include "tcc.h"
 #include <system_interrupt.h>
-#include "sercom_pinout.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* SERCOM modules should share  same slow GCLK channel ID */
-#define SERCOM_GCLK_ID SERCOM0_GCLK_ID_SLOW
-
-#if (0x1ff >= REV_SERCOM)
-#  define FEATURE_SERCOM_SYNCBUSY_SCHEME_VERSION_1
-#elif (0x400 >= REV_SERCOM)
-#  define FEATURE_SERCOM_SYNCBUSY_SCHEME_VERSION_2
-#else
-#  error "Unknown SYNCBUSY scheme for this SERCOM revision"
+#if !defined(__DOXYGEN__)
+extern void *_tcc_instances[TCC_INST_NUM];
 #endif
 
-/**
- * \brief sercom asynchronous operation mode
- *
- * Select sercom asynchronous operation mode
- */
-enum sercom_asynchronous_operation_mode {
-	SERCOM_ASYNC_OPERATION_MODE_ARITHMETIC = 0,
-	SERCOM_ASYNC_OPERATION_MODE_FRACTIONAL,
-};
 
 /**
- * \brief sercom asynchronous samples per bit
- *
- * Select number of samples per bit
+ * \name Callback Management
+ * {@
  */
-enum sercom_asynchronous_sample_num {
-	SERCOM_ASYNC_SAMPLE_NUM_3 = 3,
-	SERCOM_ASYNC_SAMPLE_NUM_8 = 8,
-	SERCOM_ASYNC_SAMPLE_NUM_16 = 16,
-};
 
-enum status_code sercom_set_gclk_generator(
-		const enum gclk_generator generator_source,
-		const bool force_change);
+enum status_code tcc_register_callback(
+		struct tcc_module *const module,
+		tcc_callback_t callback_func,
+		const enum tcc_callback callback_type);
 
-enum status_code _sercom_get_sync_baud_val(
-		const uint32_t baudrate,
-		const uint32_t external_clock,
-		uint16_t *const baudval);
+enum status_code tcc_unregister_callback(
+		struct tcc_module *const module,
+		const enum tcc_callback callback_type);
 
-enum status_code _sercom_get_async_baud_val(
-		const uint32_t baudrate,
-		const uint32_t peripheral_clock,
-		uint16_t *const baudval,
-		enum sercom_asynchronous_operation_mode mode,
-		enum sercom_asynchronous_sample_num sample_num);
+void tcc_enable_callback(
+		struct tcc_module *const module,
+		const enum tcc_callback callback_type);
 
-uint32_t _sercom_get_default_pad(
-		Sercom *const sercom_module,
-		const uint8_t pad);
+void tcc_disable_callback(
+		struct tcc_module *const module,
+		const enum tcc_callback callback_type);
 
-uint8_t _sercom_get_sercom_inst_index(
-		Sercom *const sercom_instance);
+/**
+ * @}
+ */
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif //__SERCOM_H_INCLUDED
+#endif /* TCC_CALLBACK_H_INCLUDED */

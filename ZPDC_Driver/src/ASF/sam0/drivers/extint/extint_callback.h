@@ -1,7 +1,7 @@
 /**
  * \file
  *
- * \brief SAM Serial Peripheral Interface Driver
+ * \brief SAM External Interrupt Driver
  *
  * Copyright (C) 2012-2015 Atmel Corporation. All rights reserved.
  *
@@ -43,30 +43,66 @@
 /*
  * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
-#ifndef SERCOM_INTERRUPT_H_INCLUDED
-#define SERCOM_INTERRUPT_H_INCLUDED
+#ifndef EXTINT_CALLBACK_H_INCLUDED
+#define EXTINT_CALLBACK_H_INCLUDED
 
-#include "sercom.h"
-#include <system_interrupt.h>
+#include <compiler.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Look-up table for device instances */
-extern void *_sercom_instances[SERCOM_INST_NUM];
+/**
+ * \addtogroup asfdoc_sam0_extint_group
+ *
+ * @{
+ */
 
-typedef void (*sercom_handler_t)(uint8_t instance);
+/** \name Callback Configuration and Initialization
+ * @{
+ */
 
-enum system_interrupt_vector _sercom_get_interrupt_vector(
-		Sercom *const sercom_instance);
+/** Enum for the possible callback types for the EXTINT module. */
+enum extint_callback_type
+{
+	/** Callback type for when an external interrupt detects the configured
+	 *  channel criteria (i.e. edge or level detection)
+	 */
+	EXTINT_CALLBACK_TYPE_DETECT,
+};
 
-void _sercom_set_handler(
-		const uint8_t instance,
-		const sercom_handler_t interrupt_handler);
+enum status_code extint_register_callback(
+	const extint_callback_t callback,
+	const uint8_t channel,
+	const enum extint_callback_type type);
+
+enum status_code extint_unregister_callback(
+	const extint_callback_t callback,
+	const uint8_t channel,
+	const enum extint_callback_type type);
+
+uint8_t extint_get_current_channel(void);
+
+/** @} */
+
+/** \name Callback Enabling and Disabling (Channel)
+ * @{
+ */
+
+enum status_code extint_chan_enable_callback(
+	const uint8_t channel,
+	const enum extint_callback_type type);
+
+enum status_code extint_chan_disable_callback(
+	const uint8_t channel,
+	const enum extint_callback_type type);
+
+/** @} */
+
+/** @} */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SERCOM_INTERRUPT_H_INCLUDED */
+#endif

@@ -32,11 +32,12 @@
           <option id="common.boards" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.drivers.can" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam0.drivers.divas" value="Add" config="overload" content-id="Atmel.ASF" />
+          <option id="sam0.drivers.extint" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.drivers.port" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam0.drivers.sercom.usart" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.drivers.system" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="thirdparty.os.freertos.version" value="Add" config="8.0.1" content-id="Atmel.ASF" />
           <option id="sam0.services.eeprom_emulator" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="thirdparty.os.freertos.version" value="Add" config="8.0.1" content-id="Atmel.ASF" />
+          <option id="sam0.drivers.tcc" value="Add" config="callback" content-id="Atmel.ASF" />
           <option id="sam0.utils.linker_scripts" value="Add" config="" content-id="Atmel.ASF" />
         </options>
         <configurations>
@@ -205,19 +206,6 @@
           <file path="src/ASF/sam0/drivers/divas/divas.h" framework="" version="3.32.0" source="sam0\drivers\divas\divas.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/divas/quick_start/qs_divas_basic.h" framework="" version="3.32.0" source="sam0\drivers\divas\quick_start\qs_divas_basic.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/drivers/divas/quick_start_overload/qs_divas_overload.h" framework="" version="3.32.0" source="sam0\drivers\divas\quick_start_overload\qs_divas_overload.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/sercom_interrupt.c" framework="" version="3.32.0" source="sam0\drivers\sercom\sercom_interrupt.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/sercom.c" framework="" version="3.32.0" source="sam0\drivers\sercom\sercom.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/sercom_interrupt.h" framework="" version="3.32.0" source="sam0\drivers\sercom\sercom_interrupt.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/sercom_pinout.h" framework="" version="3.32.0" source="sam0\drivers\sercom\sercom_pinout.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/sercom.h" framework="" version="3.32.0" source="sam0\drivers\sercom\sercom.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/usart/usart.c" framework="" version="3.32.0" source="sam0\drivers\sercom\usart\usart.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/usart/usart_interrupt.c" framework="" version="3.32.0" source="sam0\drivers\sercom\usart\usart_interrupt.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/usart/quick_start_lin/qs_lin.h" framework="" version="3.32.0" source="sam0\drivers\sercom\usart\quick_start_lin\qs_lin.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/usart/quick_start/qs_usart_basic_use.h" framework="" version="3.32.0" source="sam0\drivers\sercom\usart\quick_start\qs_usart_basic_use.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/usart/usart_interrupt.h" framework="" version="3.32.0" source="sam0\drivers\sercom\usart\usart_interrupt.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/usart/quick_start_callback/qs_usart_callback.h" framework="" version="3.32.0" source="sam0\drivers\sercom\usart\quick_start_callback\qs_usart_callback.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/usart/usart.h" framework="" version="3.32.0" source="sam0\drivers\sercom\usart\usart.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam0/drivers/sercom/usart/quick_start_dma/qs_usart_dma_use.h" framework="" version="3.32.0" source="sam0\drivers\sercom\usart\quick_start_dma\qs_usart_dma_use.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/croutine.c" framework="" version="3.32.0" source="thirdparty\freertos\freertos-8.0.1\Source\croutine.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/timers.c" framework="" version="3.32.0" source="thirdparty\freertos\freertos-8.0.1\Source\timers.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/thirdparty/freertos/freertos-8.0.1/Source/tasks.c" framework="" version="3.32.0" source="thirdparty\freertos\freertos-8.0.1\Source\tasks.c" changed="False" content-id="Atmel.ASF" />
@@ -249,6 +237,22 @@
           <file path="src/ASF/sam0/services/eeprom/emulator/main_array/eeprom.c" framework="" version="3.32.0" source="sam0\services\eeprom\emulator\main_array\eeprom.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/services/eeprom/emulator/main_array/eeprom.h" framework="" version="3.32.0" source="sam0\services\eeprom\emulator\main_array\eeprom.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam0/services/eeprom/emulator/main_array/quick_start/qs_emulator_basic.h" framework="" version="3.32.0" source="sam0\services\eeprom\emulator\main_array\quick_start\qs_emulator_basic.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/extint/extint_callback.c" framework="" version="3.32.0" source="sam0\drivers\extint\extint_callback.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/extint/extint_callback.h" framework="" version="3.32.0" source="sam0\drivers\extint\extint_callback.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/extint/extint.h" framework="" version="3.32.0" source="sam0\drivers\extint\extint.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/Config/conf_extint.h" framework="" version="3.32.0" source="sam0\drivers\extint\module_config\conf_extint.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/extint/extint_sam_l_c/extint.c" framework="" version="3.32.0" source="sam0\drivers\extint\extint_sam_l_c\extint.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/tcc_callback.c" framework="" version="3.32.0" source="sam0\drivers\tcc\tcc_callback.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/tcc.c" framework="" version="3.32.0" source="sam0\drivers\tcc\tcc.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/quick_start_faultn/qs_tcc_faultn.h" framework="" version="3.32.0" source="sam0\drivers\tcc\quick_start_faultn\qs_tcc_faultn.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/quick_start_buffering/qs_tcc_buffering.h" framework="" version="3.32.0" source="sam0\drivers\tcc\quick_start_buffering\qs_tcc_buffering.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/quick_start_timer/qs_tcc_timer.h" framework="" version="3.32.0" source="sam0\drivers\tcc\quick_start_timer\qs_tcc_timer.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/quick_start_faultx/qs_tcc_faultx.h" framework="" version="3.32.0" source="sam0\drivers\tcc\quick_start_faultx\qs_tcc_faultx.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/quick_start_dma/qs_tcc_dma.h" framework="" version="3.32.0" source="sam0\drivers\tcc\quick_start_dma\qs_tcc_dma.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/tcc.h" framework="" version="3.32.0" source="sam0\drivers\tcc\tcc.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/quick_start_callback/qs_tcc_callback.h" framework="" version="3.32.0" source="sam0\drivers\tcc\quick_start_callback\qs_tcc_callback.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/quick_start/qs_tcc_basic.h" framework="" version="3.32.0" source="sam0\drivers\tcc\quick_start\qs_tcc_basic.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam0/drivers/tcc/tcc_callback.h" framework="" version="3.32.0" source="sam0\drivers\tcc\tcc_callback.h" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.32.0/common.applications.user_application.sam0_system.user_board.atsamc21e18a/html/index.html" />
         <offline-documentation help="" />
@@ -290,8 +294,9 @@
             <Value>BOARD=USER_BOARD</Value>
             <Value>ARM_MATH_CM0PLUS=true</Value>
             <Value>DIVAS_OVERLOAD_MODE=true</Value>
-            <Value>USART_CALLBACK_MODE=true</Value>
             <Value>__FREERTOS__</Value>
+            <Value>EXTINT_CALLBACK_MODE=true</Value>
+            <Value>TCC_ASYNC=true</Value>
           </ListValues>
         </armgcc.compiler.symbols.DefSymbols>
         <armgcc.compiler.directories.IncludePaths>
@@ -323,12 +328,13 @@
             <Value>../src/ASF/sam0/drivers/can</Value>
             <Value>../src/ASF/sam0/drivers/port</Value>
             <Value>../src/ASF/sam0/drivers/divas</Value>
-            <Value>../src/ASF/sam0/drivers/sercom</Value>
-            <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
             <Value>../src/ASF/sam0/drivers/nvm</Value>
             <Value>../src/ASF/sam0/services/eeprom/emulator/main_array</Value>
+            <Value>../src/ASF/sam0/drivers/extint</Value>
+            <Value>../src/ASF/sam0/drivers/extint/extint_sam_l_c</Value>
+            <Value>../src/ASF/sam0/drivers/tcc</Value>
           </ListValues>
         </armgcc.compiler.directories.IncludePaths>
         <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -344,6 +350,8 @@
             <Value>DIVAS_OVERLOAD_MODE=true</Value>
             <Value>USART_CALLBACK_MODE=true</Value>
             <Value>__FREERTOS__</Value>
+            <Value>EXTINT_CALLBACK_MODE=true</Value>
+            <Value>TCC_ASYNC=true</Value>
           </ListValues>
         </armgcccpp.compiler.symbols.DefSymbols>
         <armgcccpp.compiler.directories.IncludePaths>
@@ -381,6 +389,9 @@
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
             <Value>../src/ASF/sam0/drivers/nvm</Value>
             <Value>../src/ASF/sam0/services/eeprom/emulator/main_array</Value>
+            <Value>../src/ASF/sam0/drivers/extint</Value>
+            <Value>../src/ASF/sam0/drivers/extint/extint_sam_l_c</Value>
+            <Value>../src/ASF/sam0/drivers/tcc</Value>
           </ListValues>
         </armgcccpp.compiler.directories.IncludePaths>
         <armgcccpp.compiler.optimization.level>Optimize for size (-Os)</armgcccpp.compiler.optimization.level>
@@ -429,15 +440,16 @@
             <Value>../src/ASF/sam0/drivers/can</Value>
             <Value>../src/ASF/sam0/drivers/port</Value>
             <Value>../src/ASF/sam0/drivers/divas</Value>
-            <Value>../src/ASF/sam0/drivers/sercom</Value>
-            <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
             <Value>../src/ASF/sam0/drivers/nvm</Value>
             <Value>../src/ASF/sam0/services/eeprom/emulator/main_array</Value>
+            <Value>../src/ASF/sam0/drivers/extint</Value>
+            <Value>../src/ASF/sam0/drivers/extint/extint_sam_l_c</Value>
+            <Value>../src/ASF/sam0/drivers/tcc</Value>
           </ListValues>
         </armgcccpp.assembler.general.IncludePaths>
-        <armgcccpp.preprocessingassembler.general.AssemblerFlags>-DDIVAS_OVERLOAD_MODE=true -DUSART_CALLBACK_MODE=true -D__FREERTOS__</armgcccpp.preprocessingassembler.general.AssemblerFlags>
+        <armgcccpp.preprocessingassembler.general.AssemblerFlags>-DDIVAS_OVERLOAD_MODE=true -D__FREERTOS__ -DEXTINT_CALLBACK_MODE=true -DTCC_ASYNC=true</armgcccpp.preprocessingassembler.general.AssemblerFlags>
         <armgcccpp.preprocessingassembler.general.IncludePaths>
           <ListValues>
             <Value>%24(PackRepoDir)\atmel\SAMC21_DFP\1.1.93\samc21\include</Value>
@@ -467,12 +479,13 @@
             <Value>../src/ASF/sam0/drivers/can</Value>
             <Value>../src/ASF/sam0/drivers/port</Value>
             <Value>../src/ASF/sam0/drivers/divas</Value>
-            <Value>../src/ASF/sam0/drivers/sercom</Value>
-            <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
             <Value>../src/ASF/sam0/drivers/nvm</Value>
             <Value>../src/ASF/sam0/services/eeprom/emulator/main_array</Value>
+            <Value>../src/ASF/sam0/drivers/extint</Value>
+            <Value>../src/ASF/sam0/drivers/extint/extint_sam_l_c</Value>
+            <Value>../src/ASF/sam0/drivers/tcc</Value>
           </ListValues>
         </armgcccpp.preprocessingassembler.general.IncludePaths>
       </ArmGccCpp>
@@ -492,8 +505,9 @@
             <Value>BOARD=USER_BOARD</Value>
             <Value>ARM_MATH_CM0PLUS=true</Value>
             <Value>DIVAS_OVERLOAD_MODE=true</Value>
-            <Value>USART_CALLBACK_MODE=true</Value>
             <Value>__FREERTOS__</Value>
+            <Value>EXTINT_CALLBACK_MODE=true</Value>
+            <Value>TCC_ASYNC=true</Value>
           </ListValues>
         </armgcc.compiler.symbols.DefSymbols>
         <armgcc.compiler.directories.IncludePaths>
@@ -523,13 +537,14 @@
             <Value>../src/ASF/sam0/drivers/can</Value>
             <Value>../src/ASF/sam0/drivers/port</Value>
             <Value>../src/ASF/sam0/drivers/divas</Value>
-            <Value>../src/ASF/sam0/drivers/sercom</Value>
-            <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
             <Value>../src/zpdc_module/include</Value>
             <Value>../src/ASF/sam0/drivers/nvm</Value>
             <Value>../src/ASF/sam0/services/eeprom/emulator/main_array</Value>
+            <Value>../src/ASF/sam0/drivers/extint</Value>
+            <Value>../src/ASF/sam0/drivers/extint/extint_sam_l_c</Value>
+            <Value>../src/ASF/sam0/drivers/tcc</Value>
           </ListValues>
         </armgcc.compiler.directories.IncludePaths>
         <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
@@ -546,6 +561,8 @@
             <Value>DIVAS_OVERLOAD_MODE=true</Value>
             <Value>USART_CALLBACK_MODE=true</Value>
             <Value>__FREERTOS__</Value>
+            <Value>EXTINT_CALLBACK_MODE=true</Value>
+            <Value>TCC_ASYNC=true</Value>
           </ListValues>
         </armgcccpp.compiler.symbols.DefSymbols>
         <armgcccpp.compiler.directories.IncludePaths>
@@ -582,6 +599,9 @@
             <Value>../src/zpdc_module/include</Value>
             <Value>../src/ASF/sam0/drivers/nvm</Value>
             <Value>../src/ASF/sam0/services/eeprom/emulator/main_array</Value>
+            <Value>../src/ASF/sam0/drivers/extint</Value>
+            <Value>../src/ASF/sam0/drivers/extint/extint_sam_l_c</Value>
+            <Value>../src/ASF/sam0/drivers/tcc</Value>
           </ListValues>
         </armgcccpp.compiler.directories.IncludePaths>
         <armgcccpp.compiler.optimization.level>Optimize (-O1)</armgcccpp.compiler.optimization.level>
@@ -631,16 +651,17 @@
             <Value>../src/ASF/sam0/drivers/can</Value>
             <Value>../src/ASF/sam0/drivers/port</Value>
             <Value>../src/ASF/sam0/drivers/divas</Value>
-            <Value>../src/ASF/sam0/drivers/sercom</Value>
-            <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
             <Value>../src/ASF/sam0/drivers/nvm</Value>
             <Value>../src/ASF/sam0/services/eeprom/emulator/main_array</Value>
+            <Value>../src/ASF/sam0/drivers/extint</Value>
+            <Value>../src/ASF/sam0/drivers/extint/extint_sam_l_c</Value>
+            <Value>../src/ASF/sam0/drivers/tcc</Value>
           </ListValues>
         </armgcccpp.assembler.general.IncludePaths>
         <armgcccpp.assembler.debugging.DebugLevel>Default (-g)</armgcccpp.assembler.debugging.DebugLevel>
-        <armgcccpp.preprocessingassembler.general.AssemblerFlags>-DDIVAS_OVERLOAD_MODE=true -DUSART_CALLBACK_MODE=true -D__FREERTOS__</armgcccpp.preprocessingassembler.general.AssemblerFlags>
+        <armgcccpp.preprocessingassembler.general.AssemblerFlags>-DDIVAS_OVERLOAD_MODE=true -D__FREERTOS__ -DEXTINT_CALLBACK_MODE=true -DTCC_ASYNC=true</armgcccpp.preprocessingassembler.general.AssemblerFlags>
         <armgcccpp.preprocessingassembler.general.IncludePaths>
           <ListValues>
             <Value>../src/ASF/common/boards</Value>
@@ -668,12 +689,13 @@
             <Value>../src/ASF/sam0/drivers/can</Value>
             <Value>../src/ASF/sam0/drivers/port</Value>
             <Value>../src/ASF/sam0/drivers/divas</Value>
-            <Value>../src/ASF/sam0/drivers/sercom</Value>
-            <Value>../src/ASF/sam0/drivers/sercom/usart</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/include</Value>
             <Value>../src/ASF/thirdparty/freertos/freertos-8.0.1/Source/portable/GCC/ARM_CM0</Value>
             <Value>../src/ASF/sam0/drivers/nvm</Value>
             <Value>../src/ASF/sam0/services/eeprom/emulator/main_array</Value>
+            <Value>../src/ASF/sam0/drivers/extint</Value>
+            <Value>../src/ASF/sam0/drivers/extint/extint_sam_l_c</Value>
+            <Value>../src/ASF/sam0/drivers/tcc</Value>
           </ListValues>
         </armgcccpp.preprocessingassembler.general.IncludePaths>
         <armgcccpp.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcccpp.preprocessingassembler.debugging.DebugLevel>
@@ -682,6 +704,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\ASF\sam0\drivers\can\can.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\sam0\drivers\extint\extint.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\sam0\drivers\extint\extint_callback.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\sam0\drivers\extint\extint_callback.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\sam0\drivers\extint\extint_sam_l_c\extint.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\sam0\drivers\nvm\nvm.c">
@@ -693,6 +727,39 @@
     <None Include="src\ASF\sam0\drivers\nvm\nvm.h">
       <SubType>compile</SubType>
     </None>
+    <None Include="src\ASF\sam0\drivers\tcc\quick_start_faultn\qs_tcc_faultn.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\sam0\drivers\tcc\quick_start_buffering\qs_tcc_buffering.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\sam0\drivers\tcc\quick_start_timer\qs_tcc_timer.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\sam0\drivers\tcc\quick_start_faultx\qs_tcc_faultx.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\sam0\drivers\tcc\quick_start_dma\qs_tcc_dma.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\sam0\drivers\tcc\quick_start_callback\qs_tcc_callback.h">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="src\ASF\sam0\drivers\tcc\quick_start\qs_tcc_basic.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\sam0\drivers\tcc\tcc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\sam0\drivers\tcc\tcc.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\sam0\drivers\tcc\tcc_callback.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\sam0\drivers\tcc\tcc_callback.h">
+      <SubType>compile</SubType>
+    </None>
     <Compile Include="src\ASF\sam0\services\eeprom\emulator\main_array\eeprom.c">
       <SubType>compile</SubType>
     </Compile>
@@ -702,6 +769,12 @@
     <None Include="src\ASF\sam0\services\eeprom\emulator\main_array\quick_start\qs_emulator_basic.h">
       <SubType>compile</SubType>
     </None>
+    <None Include="src\config\conf_extint.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\zpdc_module\include\zpdc_bldc.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\zpdc_module\include\zpdc_can.h">
       <SubType>compile</SubType>
     </Compile>
@@ -709,6 +782,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\zpdc_module\include\zpdc_system.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\zpdc_module\utils\zpdc_bldc.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\zpdc_module\utils\zpdc_can.cpp">
@@ -754,45 +830,6 @@
       <SubType>compile</SubType>
     </None>
     <None Include="src\ASF\sam0\drivers\port\port.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam0\drivers\sercom\sercom.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam0\drivers\sercom\sercom.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam0\drivers\sercom\sercom_interrupt.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam0\drivers\sercom\sercom_interrupt.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\sercom\sercom_pinout.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\sercom\usart\quick_start_lin\qs_lin.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\sercom\usart\quick_start\qs_usart_basic_use.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\sercom\usart\quick_start_callback\qs_usart_callback.h">
-      <SubType>compile</SubType>
-    </None>
-    <None Include="src\ASF\sam0\drivers\sercom\usart\quick_start_dma\qs_usart_dma_use.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam0\drivers\sercom\usart\usart.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam0\drivers\sercom\usart\usart.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam0\drivers\sercom\usart\usart_interrupt.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam0\drivers\sercom\usart\usart_interrupt.h">
       <SubType>compile</SubType>
     </None>
     <Compile Include="src\ASF\thirdparty\freertos\freertos-8.0.1\Source\croutine.c">
@@ -1264,16 +1301,12 @@
     <Folder Include="src\ASF\sam0\drivers\divas\" />
     <Folder Include="src\ASF\sam0\drivers\divas\quick_start\" />
     <Folder Include="src\ASF\sam0\drivers\divas\quick_start_overload\" />
+    <Folder Include="src\ASF\sam0\drivers\extint\" />
+    <Folder Include="src\ASF\sam0\drivers\extint\extint_sam_l_c\" />
     <Folder Include="src\ASF\sam0\drivers\nvm\" />
     <Folder Include="src\ASF\sam0\drivers\nvm\quick_start_basic\" />
     <Folder Include="src\ASF\sam0\drivers\port\" />
     <Folder Include="src\ASF\sam0\drivers\port\quick_start\" />
-    <Folder Include="src\ASF\sam0\drivers\sercom\" />
-    <Folder Include="src\ASF\sam0\drivers\sercom\usart\" />
-    <Folder Include="src\ASF\sam0\drivers\sercom\usart\quick_start\" />
-    <Folder Include="src\ASF\sam0\drivers\sercom\usart\quick_start_callback\" />
-    <Folder Include="src\ASF\sam0\drivers\sercom\usart\quick_start_dma\" />
-    <Folder Include="src\ASF\sam0\drivers\sercom\usart\quick_start_lin\" />
     <Folder Include="src\ASF\sam0\drivers\system\" />
     <Folder Include="src\ASF\sam0\drivers\system\clock\" />
     <Folder Include="src\ASF\sam0\drivers\system\clock\clock_samc20_c21\" />
@@ -1285,6 +1318,14 @@
     <Folder Include="src\ASF\sam0\drivers\system\power\power_sam_c\" />
     <Folder Include="src\ASF\sam0\drivers\system\reset\" />
     <Folder Include="src\ASF\sam0\drivers\system\reset\reset_sam_c\" />
+    <Folder Include="src\ASF\sam0\drivers\tcc\" />
+    <Folder Include="src\ASF\sam0\drivers\tcc\quick_start\" />
+    <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_buffering\" />
+    <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_callback\" />
+    <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_dma\" />
+    <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_faultn\" />
+    <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_faultx\" />
+    <Folder Include="src\ASF\sam0\drivers\tcc\quick_start_timer\" />
     <Folder Include="src\ASF\sam0\services\" />
     <Folder Include="src\ASF\sam0\services\eeprom\" />
     <Folder Include="src\ASF\sam0\services\eeprom\emulator\" />
