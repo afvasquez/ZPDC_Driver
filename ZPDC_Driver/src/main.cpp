@@ -32,3 +32,9 @@ void CAN0_Handler(void) {
 void extint_callback_wrapper(void) {
 	Motor_Object->hall_callback();
 }
+void speed_measurement_timer_callback(struct tc_module *const module_inst) {
+	Motor_Object->speed_sensor.timer_callback();
+}
+void pid_loop_timer_callback(struct tc_module *const module_inst) {
+	Motor_Object->pid_instance.timer_callback();
+}

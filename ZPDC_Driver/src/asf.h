@@ -52,6 +52,10 @@
  * running the ASF driver selector tool. Any changes will be discarded.
  */
 
+// From module: ADC - Analog-to-Digital Converter (Callback APIs)
+#include <adc.h>
+#include <adc_callback.h>
+
 // From module: CAN - Control Area Network Controller
 #include <can.h>
 
@@ -119,6 +123,10 @@
 
 // From module: SYSTEM - Reset Management for SAM C20/C21
 #include <reset.h>
+
+// From module: TC - Timer Counter (Callback APIs)
+#include <tc.h>
+#include <tc_interrupt.h>
 
 // From module: TCC - Timer Counter for Control Applications (Callback APIs)
 #include <tcc.h>

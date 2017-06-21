@@ -7,6 +7,9 @@
  */ 
  #include <asf.h>
 
+ #define SELECTED_SPEED 4824
+ #define SELECTED_RAMP	400
+
  const uint8_t motor_controller::cw_pattern_enable[8] = { 0x66, 0x55, 0x55, 0x33, 0x66, 0x33, 0x77, 0x77 };
  const uint8_t motor_controller::cw_pattern_value[8] =  { 0x20, 0x40, 0x10, 0x10, 0x40, 0x20, 0x70, 0x00 };
  const uint8_t motor_controller::ccw_pattern_enable[6] = { 0x33, 0x66, 0x33, 0x55, 0x55, 0x66 };
@@ -108,30 +111,37 @@
 	b = (uint8_t)mot_pars->hall_b_pin;
 	c = (uint8_t)mot_pars->hall_c_pin;
 
+	motor_duty = 0;
+
 	hall_status = getHallSensorStatus();
 
 	motor_direction = zpdc_system->get_boolean_subpage_bit(4, 0);
 
 	ramp.init(this);
+	pid_instance.init(&motor_one_parameters, &speed_sensor, &motor_status, this);
+	speed_sensor.init(mot_pars, &pid_instance);
  }
-
  void motor_controller::hall_callback() {
+	force_motor_commutation();
+	speed_sensor.get_speed_measurement_callback();
+ }
+ void motor_controller::force_motor_commutation(void) {
 	hall_status = getHallSensorStatus();
 
 	switch (motor_status) {
 		case MOTOR_STATUS_RUN:
-			if (hall_status > 0) {
-				if (motor_direction) 
-					tcc_instance.hw->PATTBUF.reg = TCC_PATTBUF_PGEB(ccw_pattern_enable[hall_status-1]) | 
-												   TCC_PATTBUF_PGVB(ccw_pattern_value[hall_status-1]);
-				else
-					tcc_instance.hw->PATTBUF.reg = TCC_PATTBUF_PGEB(cw_pattern_enable[hall_status-1]) | 
-												   TCC_PATTBUF_PGVB(cw_pattern_value[hall_status-1]);
-			} else {
-				setMotorDuty(0);
-				tcc_instance.hw->PATTBUF.reg = TCC_PATTBUF_PGEB(cw_pattern_enable[MOTOR_FREEWHEEL]) |
-											   TCC_PATTBUF_PGVB(cw_pattern_value[MOTOR_FREEWHEEL]);
-			}
+		if (hall_status > 0) {
+			if (motor_direction)
+				tcc_instance.hw->PATTBUF.reg = TCC_PATTBUF_PGEB(ccw_pattern_enable[hall_status-1]) |
+											   TCC_PATTBUF_PGVB(ccw_pattern_value[hall_status-1]);
+			else
+				tcc_instance.hw->PATTBUF.reg = TCC_PATTBUF_PGEB(cw_pattern_enable[hall_status-1]) |
+											   TCC_PATTBUF_PGVB(cw_pattern_value[hall_status-1]);
+		} else {
+			setMotorDuty(0);
+			tcc_instance.hw->PATTBUF.reg = TCC_PATTBUF_PGEB(cw_pattern_enable[MOTOR_FREEWHEEL]) |
+									       TCC_PATTBUF_PGVB(cw_pattern_value[MOTOR_FREEWHEEL]);
+		}
 		break;
 		case MOTOR_STATUS_BRAKE:
 			setMotorDuty(0);
@@ -148,7 +158,6 @@
 
 	tcc_force_double_buffer_update(&tcc_instance);
  }
-
  uint8_t motor_controller::getHallSensorStatus(void) {
 	uint8_t hall_code = (port_pin_get_input_level(c) ? 0x04 : 0x00) | 
 						(port_pin_get_input_level(b) ? 0x02 : 0x00) | 
@@ -158,9 +167,8 @@
 	return hall_code;
  }
  
-
  void motor_ramp::init(motor_controller *instance) {
-	ramp_duration = 500; // 500ms
+	ramp_duration = SELECTED_RAMP; // 500ms
 	ramp_status = MOTOR_RAMP_IDLE;
 
 	controller_motor = instance;
@@ -178,66 +186,247 @@
  }
  void motor_ramp::calculate_ramp_delta(void) {
 	float delta;
-	if (ramp_status == MOTOR_RAMP_UP) delta = (float)0x07EE / (float)ramp_duration;
-	else if (ramp_status == MOTOR_RAMP_DOWN) delta = (float)(((float)0x07EE * -1) / (float)ramp_duration);
+	if (ramp_status == MOTOR_RAMP_UP) delta = (float)SELECTED_SPEED / (float)ramp_duration;
+	else if (ramp_status == MOTOR_RAMP_DOWN) delta = (float)(((float)SELECTED_SPEED * -1) / (float)ramp_duration);
 	else {
 		ramp_delta = 0;
 		return;
 	}
 	ramp_delta = delta * 10;
  }
-
  void motor_ramp::task(void) {
-	 TickType_t xLastWakeTime;
-	 int new_duty;
-	 bool trigger = true;
+	TickType_t xLastWakeTime;
+	controller_motor->motor_status = MOTOR_STATUS_FREE;
+	controller_motor->hall_callback();
 
-	 xLastWakeTime = xTaskGetTickCount() + 1500;
-	 for(;;) {
-		 port_pin_set_output_level(LED_ERROR, false);
-		 port_pin_set_output_level(LED_WARNING, false);
-		 
-		 vTaskDelay(1500);
-		 trigger = !trigger;
-		 //vTaskSuspend(NULL);
-		 
-		 port_pin_toggle_output_level(LED_ACTIVITY);
+	bool trigger = true;
+	bool run_start = false;
+	int new_duty;
 
-		 if (!trigger) {
+	//vTaskSuspend(NULL);
+	xLastWakeTime = xTaskGetTickCount();
+	for(;;) { 
+		trigger = !trigger;
+
+		if (!trigger) {
+			vTaskDelayUntil(&xLastWakeTime, 1500);
+
+			portENTER_CRITICAL();
 			ramp_status = MOTOR_RAMP_UP;
+
+				// Reset all PID Loop Controls
+			controller_motor->pid_instance.reset();
+
 			controller_motor->motor_status = MOTOR_STATUS_RUN;
-			controller_motor->hall_callback();
-		 } else {
+			controller_motor->force_motor_commutation();
+			new_duty = 0;
+
+			run_start = true;
+
+			portEXIT_CRITICAL();
+		} else {
 			ramp_status = MOTOR_RAMP_DOWN;
-		 }
+			new_duty = SELECTED_SPEED;
+		}
 
-		 calculate_ramp_delta();
-		 new_duty = 0;
+		calculate_ramp_delta();
 
-		 while(ramp_status) {
-			 new_duty = getCurrentMotorValue() + ramp_delta;
-			 if (ramp_status == MOTOR_RAMP_UP) {
-				 if (new_duty > 0x07EE) {
-					 new_duty = 0x07EE;
-					 ramp_status = MOTOR_RAMP_IDLE;
-				 }
-				 controller_motor->setMotorDuty((uint16_t) new_duty);
-				 port_pin_set_output_level(LED_WARNING, true);
-			 } else if (ramp_status == MOTOR_RAMP_DOWN) {
-				 if (new_duty < 0) {
-					 new_duty = 0;
-					 ramp_status = MOTOR_RAMP_IDLE;
-					 controller_motor->motor_status = MOTOR_STATUS_BRAKE;
-					 controller_motor->hall_callback();
-				 }
-				 controller_motor->setMotorDuty((uint16_t) new_duty);
-				 port_pin_set_output_level(LED_ERROR, true);
-			 } else ramp_status = MOTOR_RAMP_IDLE;
+		while(ramp_status) {
+			new_duty = controller_motor->pid_instance.setpoint + ramp_delta;
+			//new_duty = new_duty + ramp_delta; // Ram Debugging
+			if (ramp_status == MOTOR_RAMP_UP) {
+				if (new_duty > SELECTED_SPEED) {
+					new_duty = SELECTED_SPEED;
+					ramp_status = MOTOR_RAMP_IDLE;
+				}
+				controller_motor->pid_instance.setpoint = (uint16_t)new_duty;
+				controller_motor->speed_sensor.set_pid_flag(true);
+			} else if (ramp_status == MOTOR_RAMP_DOWN) {
+				if (new_duty < 0) {
+					controller_motor->pid_instance.setpoint = 0;
+					new_duty = 0;
+					ramp_status = MOTOR_RAMP_IDLE;
+					controller_motor->motor_status = MOTOR_STATUS_FREE;
+					controller_motor->hall_callback();
+				}
+				controller_motor->pid_instance.setpoint = (uint16_t)new_duty;
+				controller_motor->speed_sensor.set_pid_flag(true);
+			} else {
+				ramp_status = MOTOR_RAMP_IDLE;
+			}
 
-			 if(ramp_status) { 
-				vTaskDelayUntil( &xLastWakeTime, 5 );	// 10ms
-				xLastWakeTime = xTaskGetTickCount();
-			 } else xLastWakeTime = xTaskGetTickCount() + 1500;
-		 }
-	 }
+			if ( run_start ) {
+				run_start = false;
+				vTaskResume(controller_motor->pid_instance.handle);
+			}
+
+			if(ramp_status) vTaskDelayUntil( &xLastWakeTime, 5 );	// 10ms
+			else if (new_duty > 0) vTaskDelayUntil( &xLastWakeTime, 5000 );
+		}
+	}
+ }
+
+ speed_measurement::speed_measurement(void) {
+	measured_speed = 0;
+	revolution_counter = 0;
+	revolution_time_delta = 0;
+	is_measurement_new = false;
+	is_pid_to_execute = false;
+ }
+ void speed_measurement::init(const MotorOneParameters *mot_pars, pid_controller *pid) {
+	struct tc_config config_tc;
+	tc_get_config_defaults(&config_tc);
+
+	config_tc.clock_source = GCLK_GENERATOR_3;
+	config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV4;
+	config_tc.counter_size = TC_COUNTER_SIZE_32BIT;
+	config_tc.counter_32_bit.compare_capture_channel[0] = 800000ul;
+
+	tc_init(&timer_module, mot_pars->speed_measurement_module, &config_tc);
+	tc_enable(&timer_module);
+
+	tc_register_callback(&timer_module, mot_pars->tsm_callback, TC_CALLBACK_CC_CHANNEL0);
+	tc_enable_callback(&timer_module, TC_CALLBACK_CC_CHANNEL0);
+
+	controller = pid;
+ }
+ void speed_measurement::timer_callback(void) {
+	measured_speed = 0;
+	is_measurement_new = true;
+	revolution_counter = 0;
+	revolution_time_delta = 0;
+
+	//port_pin_toggle_output_level(LED_ERROR);
+	//vTaskResume
+		// Reset counter
+	tc_set_count_value(&timer_module, 0);
+ }
+ void speed_measurement::get_speed_measurement_callback(void) {
+	revolution_counter++;
+	if (revolution_counter > 23) {
+		revolution_counter = 0;
+		revolution_time_delta = tc_get_count_value(&timer_module);
+		revolution_time_delta = tc_get_count_value(&timer_module);
+		tc_set_count_value(&timer_module, 0);
+		is_measurement_new = true;
+	}
+ }
+ uint32_t speed_measurement::get_speed(void) {
+	if (is_measurement_new) {
+		if (revolution_time_delta > 0) {
+			measured_speed = (uint16_t) ( 9600000ul / revolution_time_delta );
+		} else measured_speed = 0;
+		
+		is_measurement_new = false;
+		is_pid_to_execute = true;
+	}
+
+	return measured_speed;
+ }
+
+ 
+ void pid_controller::init(const MotorOneParameters *mot_pars, 
+								speed_measurement *speed_detector, 
+								uint8_t *motor_status,
+								motor_controller *controller_motor) {
+	struct tc_config config_tc;
+	tc_get_config_defaults(&config_tc);
+
+	config_tc.clock_source = GCLK_GENERATOR_4;
+	config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV1;
+	config_tc.counter_size = TC_COUNTER_SIZE_16BIT;
+	config_tc.counter_16_bit.compare_capture_channel[0] = 39995;
+
+	tc_init(&timer_module, mot_pars->pid_timer_module, &config_tc);
+	tc_enable(&timer_module);
+
+	tc_register_callback(&timer_module, mot_pars->pidt_callback, TC_CALLBACK_CC_CHANNEL0);
+	tc_enable_callback(&timer_module, TC_CALLBACK_CC_CHANNEL0);
+
+	speed_sensor = speed_detector;
+	status = motor_status;
+	controller = controller_motor;
+
+	
+	kp = 0.11;
+	ki = 0.0001;
+	kd = 0.0;
+
+	setpoint = 0;
+
+	t_init("PID", 3, 1);
+ }
+ void pid_controller::task(void) {
+	volatile float elapsed_time;
+	pid_error = 0;
+	pid_integral = 0;
+	pid_derivative = 0;
+	pid_output = 0;
+	pid_previous_error = 0;
+
+	tc_set_count_value(&timer_module, 0);
+	pid_time_delta = 0;
+
+	for(;;) {
+		vTaskSuspend(NULL);
+
+			// Initial and Final Commutation Step
+		if (*status != MOTOR_STATUS_RUN) {
+			controller->setMotorDuty((uint16_t)0);
+			controller->force_motor_commutation();
+			setpoint = 0;
+			pid_previous_error = 0;
+		} else if (setpoint > 0) {
+			// PID Loop
+				// Get and Calculate Speed
+			speed_sensor->get_speed();
+
+			if (speed_sensor->get_pid_flag()) {
+				pid_error = setpoint - speed_sensor->measured_speed;
+
+				if (pid_error != 0) {
+					pid_time_delta = (pid_time_delta * 10);
+					pid_time_delta += get_granular_time();
+					
+					if (pid_time_delta > 0) {
+						elapsed_time = ((float) pid_time_delta) / ((float) 1000.0);
+						pid_integral = pid_error * elapsed_time;
+						pid_derivative = (int)((pid_error - pid_previous_error) / elapsed_time);
+						pid_output = ((kp*pid_error) + (ki*pid_integral) + (kd*pid_derivative));
+					} else pid_output = 0;
+
+					pid_output = controller->getMotorDuty() + pid_output;
+					if (pid_output < 0) pid_output = 0;
+					if (pid_output > 0)
+						if (pid_output > 3071)
+							controller->setMotorDuty((uint16_t) 0x0BFF);
+						else
+							controller->setMotorDuty((uint16_t) pid_output);
+					else
+						controller->setMotorDuty((uint16_t) 0);
+				}
+
+				pid_previous_error = pid_error;
+			}
+		}
+	}
+ }
+ void pid_controller::timer_callback(void) {
+	BaseType_t xYieldRequired = pdFALSE;
+	pid_time_delta++;
+
+	if (controller->motor_status == MOTOR_STATUS_RUN)
+		xYieldRequired = xTaskResumeFromISR(handle);
+
+	tc_set_count_value(&timer_module, 0);
+	portYIELD_FROM_ISR(xYieldRequired);
+ }
+ void pid_controller::reset(void) {
+	 pid_error = 0;
+	 pid_time_delta = 0;
+	 pid_previous_error = 0;
+	 speed_sensor->revolution_time_delta = 0;
+	 speed_sensor->is_measurement_new = true;
+
+	 tc_set_count_value(&timer_module, 0);
  }

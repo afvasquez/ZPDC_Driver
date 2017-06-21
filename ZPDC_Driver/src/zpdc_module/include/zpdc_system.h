@@ -15,6 +15,8 @@
 #define LED_ERROR		PIN_PA19
 
 void extint_callback_wrapper(void);
+void speed_measurement_timer_callback(struct tc_module *const module_inst);
+void pid_loop_timer_callback(struct tc_module *const module_inst);
 
 /* System Data */
 class ZpdcSystem {
