@@ -118,8 +118,14 @@
 	motor_direction = zpdc_system->get_boolean_subpage_bit(4, 0);
 
 	ramp.init(this);
+	zpdc_system->read_ramp_values(&(ramp.ramp_duration),&(ramp.target_speed));
+	
 	pid_instance.init(&motor_one_parameters, &speed_sensor, &motor_status, this);
+	zpdc_system->read_pid_values(&(pid_instance.kp), &(pid_instance.ki), &(pid_instance.kd));
+	
 	speed_sensor.init(mot_pars, &pid_instance);
+
+	is_motor_running = false;
  }
  void motor_controller::hall_callback() {
 	force_motor_commutation();
@@ -168,7 +174,6 @@
  }
  
  void motor_ramp::init(motor_controller *instance) {
-	ramp_duration = SELECTED_RAMP; // 500ms
 	ramp_status = MOTOR_RAMP_IDLE;
 
 	controller_motor = instance;
@@ -186,33 +191,27 @@
  }
  void motor_ramp::calculate_ramp_delta(void) {
 	float delta;
-	if (ramp_status == MOTOR_RAMP_UP) delta = (float)SELECTED_SPEED / (float)ramp_duration;
-	else if (ramp_status == MOTOR_RAMP_DOWN) delta = (float)(((float)SELECTED_SPEED * -1) / (float)ramp_duration);
+	if (ramp_status == MOTOR_RAMP_UP) delta = (float)target_speed / (float)ramp_duration;
+	else if (ramp_status == MOTOR_RAMP_DOWN) delta = (float)(((float)target_speed * -1) / (float)ramp_duration);
 	else {
 		ramp_delta = 0;
 		return;
 	}
-	ramp_delta = delta * 10;
+	ramp_delta = delta * 10;	// To 10ms intervals
  }
  void motor_ramp::task(void) {
 	TickType_t xLastWakeTime;
 	controller_motor->motor_status = MOTOR_STATUS_FREE;
 	controller_motor->hall_callback();
 
-	bool trigger = true;
 	bool run_start = false;
 	int new_duty;
 
-	//vTaskSuspend(NULL);
-	xLastWakeTime = xTaskGetTickCount();
 	for(;;) { 
-		trigger = !trigger;
+		vTaskSuspend(NULL);
 
-		if (!trigger) {
-			vTaskDelayUntil(&xLastWakeTime, 1500);
-
+		if (ramp_status == MOTOR_RAMP_UP) {
 			portENTER_CRITICAL();
-			ramp_status = MOTOR_RAMP_UP;
 
 				// Reset all PID Loop Controls
 			controller_motor->pid_instance.reset();
@@ -224,19 +223,16 @@
 			run_start = true;
 
 			portEXIT_CRITICAL();
-		} else {
-			ramp_status = MOTOR_RAMP_DOWN;
-			new_duty = SELECTED_SPEED;
-		}
+		} else if (ramp_status == MOTOR_RAMP_DOWN) new_duty = target_speed;
 
 		calculate_ramp_delta();
 
+		xLastWakeTime = xTaskGetTickCount();
 		while(ramp_status) {
 			new_duty = controller_motor->pid_instance.setpoint + ramp_delta;
-			//new_duty = new_duty + ramp_delta; // Ram Debugging
 			if (ramp_status == MOTOR_RAMP_UP) {
-				if (new_duty > SELECTED_SPEED) {
-					new_duty = SELECTED_SPEED;
+				if (new_duty > target_speed) {
+					new_duty = target_speed;
 					ramp_status = MOTOR_RAMP_IDLE;
 				}
 				controller_motor->pid_instance.setpoint = (uint16_t)new_duty;
@@ -260,8 +256,8 @@
 				vTaskResume(controller_motor->pid_instance.handle);
 			}
 
-			if(ramp_status) vTaskDelayUntil( &xLastWakeTime, 5 );	// 10ms
-			else if (new_duty > 0) vTaskDelayUntil( &xLastWakeTime, 5000 );
+			if(ramp_status)
+				vTaskDelayUntil( &xLastWakeTime, 5 );	// 10ms
 		}
 	}
  }
@@ -346,11 +342,6 @@
 	speed_sensor = speed_detector;
 	status = motor_status;
 	controller = controller_motor;
-
-	
-	kp = 0.11;
-	ki = 0.0001;
-	kd = 0.0;
 
 	setpoint = 0;
 

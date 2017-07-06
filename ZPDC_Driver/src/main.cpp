@@ -21,6 +21,9 @@ int main(void)
 	motor_controller bldc_motor(&system_data, &motor_one_parameters);
 	Motor_Object = &bldc_motor;
 
+		// Assign motor to CAN module
+	can_obj.assignMotor(&bldc_motor);
+
     /* Replace with your application code */
     vTaskStartScheduler();
 }

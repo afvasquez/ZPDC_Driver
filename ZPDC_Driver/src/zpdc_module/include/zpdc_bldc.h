@@ -74,9 +74,14 @@ class motor_ramp : Task {
 public:
 	void init(motor_controller *instance);
 
+	void setRampStatus(uint8_t rampStatus) { ramp_status = rampStatus; }
+	TaskHandle_t getTaskHandle(void) { return handle; }
+
 	void task(void);
-private:
+
 	uint16_t ramp_duration;
+	uint16_t target_speed;
+private:
 	int16_t ramp_delta;
 	uint8_t ramp_status;
 	motor_controller *controller_motor;
@@ -130,6 +135,8 @@ public:
 	void reset(void);
 
 	uint16_t setpoint;
+
+	float kp, ki, kd;
 private:
 	struct tc_module timer_module;
 
@@ -143,8 +150,6 @@ private:
 
 	uint8_t *status;
 	uint16_t pid_time_delta;
-
-	float kp, ki, kd;
 
 	uint16_t get_granular_time(void) {
 		uint8_t result = tc_get_capture_value(&timer_module, TC_COMPARE_CAPTURE_CHANNEL_0) / 4000ul;
@@ -171,22 +176,30 @@ public:
 	}
 
 	uint16_t getMotorDuty(void) { return motor_duty; }
+	bool isMotorRunning(void) { return is_motor_running; }
+	void setMotorRunning(bool motState) { 
+		is_motor_running = motState;
+		if (motState) ramp.setRampStatus(MOTOR_RAMP_UP);
+		else ramp.setRampStatus(MOTOR_RAMP_DOWN);
+	}
+	TaskHandle_t getRampTaskHandle(void) { return ramp.getTaskHandle(); }
 	void force_motor_commutation(void);
 
 	struct tcc_module tcc_instance;
 	uint8_t motor_status;
 	speed_measurement speed_sensor;
 	pid_controller pid_instance;
+	motor_ramp ramp;
 private:
 	static const uint8_t cw_pattern_enable[8];
 	static const uint8_t cw_pattern_value[8];
 	static const uint8_t ccw_pattern_enable[6];
 	static const uint8_t ccw_pattern_value[6];
 
-	motor_ramp ramp;
 	uint16_t motor_duty;
 	uint8_t a, b, c, hall_status;
 	bool motor_direction;
+	bool is_motor_running;
 
 	uint8_t getHallSensorStatus(void);
 };

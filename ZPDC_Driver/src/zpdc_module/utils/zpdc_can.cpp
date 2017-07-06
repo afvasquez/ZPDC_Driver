@@ -89,13 +89,11 @@
 						{ system_data->set_address(rx_element_fifo_0.data[3]); system_data->set_role(rx_element_fifo_0.data[4]); is_can_to_send = true; }
 					tx_message_0[0] = CAN_ORDER_UPDATE_RETURN;
 				case CAN_DISCOVERY_REQUEST:
-					//port_pin_toggle_output_level(LED_WARNING);
 					if (rx_element_fifo_0.data[0] == CAN_DISCOVERY_REQUEST) { tx_message_0[0] = CAN_DISCOVERY_RETURN; is_can_to_send = true; }
 					tx_message_0[1] = system_data->get_uid_high();
 					tx_message_0[2] = system_data->get_uid_low();
 					tx_message_0[3] = system_data->get_address();
 					if(is_can_to_send) send(4, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
-					//port_pin_toggle_output_level(LED_WARNING);
 				break;
 				case CAN_REQUEST_LED_TOG:
 					if (rx_element_fifo_0.data[1] == system_data->get_uid_high() && rx_element_fifo_0.data[2] == system_data->get_uid_low()) {
@@ -105,15 +103,65 @@
 						tx_message_0[2] = system_data->get_uid_low();
 						tx_message_0[3] = (port_pin_get_output_level(LED_ACTIVITY) ? 0x01 : 0x00);
 						send(4, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
-						//port_pin_set_output_level(PIN_PA03, false);
 					}
 				break;
-				case CAN_DISCOVERY_RETURN: {
-					/*uint32_t i_data = (uint32_t)((uint32_t)(rx_element_fifo_0.data[1] << 16) | (uint32_t)(rx_element_fifo_0.data[2] << 8) | (uint32_t)(rx_element_fifo_0.data[3]));
-					xQueueSendFromISR(queue_net_devices,
-										&i_data, 
-										&xHigherPriorityWoken);*/
-				}
+				case CAN_MOTOR_START:
+					if (rx_element_fifo_0.data[1] == system_data->get_uid_high() && rx_element_fifo_0.data[2] == system_data->get_uid_low()) {	
+						if (!motor->isMotorRunning())
+							motor->setMotorRunning(true);
+						tx_message_0[0] = CAN_MOTOR_START_RETURN;
+					}
+				case CAN_MOTOR_STOP:
+					if (rx_element_fifo_0.data[1] == system_data->get_uid_high() && rx_element_fifo_0.data[2] == system_data->get_uid_low()) {
+						if (rx_element_fifo_0.data[0] == CAN_MOTOR_STOP) {
+							if (motor->isMotorRunning())
+								motor->setMotorRunning(false);
+						}
+						xHigherPriorityWoken = xTaskResumeFromISR(motor->getRampTaskHandle());
+						if (rx_element_fifo_0.data[0] == CAN_MOTOR_STOP) 
+							tx_message_0[0] = CAN_MOTOR_STOP_RETURN;
+						tx_message_0[1] = system_data->get_uid_high();
+						tx_message_0[2] = system_data->get_uid_low();
+						tx_message_0[3] = (motor->isMotorRunning() ? 0x01 : 0x00);
+						send(4, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
+					}
+				break;
+				case CAN_MOTOR_PID_TUNE:
+					if ((rx_element_fifo_0.data[1] == system_data->get_address()) || (rx_element_fifo_0.data[1] == 0)) {
+						tx_message_0[0] = CAN_MOTOR_PID_TUNE_RETURN;
+						tx_message_0[1] = system_data->get_address();
+						if(!motor->isMotorRunning()) {
+							system_data->store_pid_values(&rx_element_fifo_0.data[2], 
+														  &rx_element_fifo_0.data[4], 
+														  &rx_element_fifo_0.data[6]);
+							system_data->read_pid_values(&(motor->pid_instance.kp), &(motor->pid_instance.ki), &(motor->pid_instance.kd));
+							tx_message_0[2] = 1;	// OK
+						} else tx_message_0[2] = 0;	// FAIL
+						send(3, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
+					}
+				break;
+				case CAN_MOTOR_PARAM_A:
+					if ((rx_element_fifo_0.data[1] == system_data->get_address()) || (rx_element_fifo_0.data[1] == 0)) {
+						tx_message_0[0] = CAN_MOTOR_PARAM_A_RETURN;
+						tx_message_0[1] = system_data->get_address();
+						if(!motor->isMotorRunning()) {
+							system_data->store_ramp_values(&rx_element_fifo_0.data[2],
+														   &rx_element_fifo_0.data[4]);
+							system_data->read_ramp_values(&(motor->ramp.ramp_duration),&(motor->ramp.target_speed));
+							tx_message_0[2] = 1;	// OK
+						} else tx_message_0[2] = 0;	// FAIL
+						send(3, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
+					}
+				break;
+				case CAN_MOTOR_PARAM_B:	// TODO: This is an expansion slot for 
+					if ((rx_element_fifo_0.data[1] == system_data->get_address()) || (rx_element_fifo_0.data[1] == 0)) {
+						tx_message_0[0] = CAN_MOTOR_PARAM_B_RETURN;
+						tx_message_0[1] = system_data->get_address();
+						if(!motor->isMotorRunning()) {
+							tx_message_0[2] = 1;	// OK
+						} else tx_message_0[2] = 0;	// FAIL
+						send(3, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
+					}
 				break;
 			}	
 		}

@@ -14,6 +14,8 @@
 #define LED_WARNING		PIN_PA18
 #define LED_ERROR		PIN_PA19
 
+#include "arm_math.h"
+
 void extint_callback_wrapper(void);
 void speed_measurement_timer_callback(struct tc_module *const module_inst);
 void pid_loop_timer_callback(struct tc_module *const module_inst);
@@ -108,6 +110,78 @@ class ZpdcSystem {
 			if (page_data[subpage] & (1 << position)) return true;
 			else return false;
 		}
+		void store_pid_values(uint8_t *kp, uint8_t *ki, uint8_t *kd) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			eeprom_emulator_read_page(0, page_data);
+			page_data[10] = *kp;
+			page_data[11] = *(kp + 1);
+			page_data[12] = *ki;
+			page_data[13] = *(ki + 1);
+			page_data[14] = *kd;
+			page_data[15] = *(kd + 1);
+			eeprom_emulator_write_page(0,page_data);
+			eeprom_emulator_commit_page_buffer();	// END UID EEPROM STORAGE
+		}
+		
+		void store_ramp_values(uint8_t *duration, uint8_t *speed) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			eeprom_emulator_read_page(0, page_data);
+			page_data[16] = *duration;
+			page_data[17] = *(duration + 1);
+			page_data[18] = *speed;
+			page_data[19] = *(speed + 1);
+			eeprom_emulator_write_page(0,page_data);
+			eeprom_emulator_commit_page_buffer();	// END UID EEPROM STORAGE
+		}
+		void read_ramp_values(uint16_t *ramp_duration, uint16_t *ramp_speed) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			eeprom_emulator_read_page(0, page_data);
+			
+			// P
+			*ramp_duration = (uint16_t)(page_data[16] << 8);
+			*ramp_duration |= (uint16_t)(page_data[17]);
+
+			// I
+			*ramp_speed = (uint16_t)(page_data[18] << 8);
+			*ramp_speed |= (uint16_t)(page_data[19]);
+		}
+
+		void read_pid_values(float *kp, float *ki, float *kd) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			uint16_t tune_value;
+			eeprom_emulator_read_page(0, page_data);
+			
+			// P
+			tune_value = (uint16_t)(page_data[10] << 8);
+			tune_value |= (uint16_t)(page_data[11]);
+			*kp = ((float)((tune_value)/(1000.0))) + 0.00000001;
+
+			// I
+			tune_value = (uint16_t)(page_data[12] << 8);
+			tune_value |= (uint16_t)(page_data[13]);
+			*ki = ((float)((tune_value)/((float)10000.0))) + 0.00000001;
+
+			// D
+			tune_value = (uint16_t)(page_data[14] << 8);
+			tune_value |= (uint16_t)(page_data[15]);
+			*kd = ((float)((tune_value)/((float)10000.0))) + 0.00000001;
+		}
+		void read_pid_values(uint16_t *kp, uint16_t *ki, uint16_t *kd) {
+			uint8_t page_data[EEPROM_PAGE_SIZE];
+			eeprom_emulator_read_page(0, page_data);
+			
+			// P
+			*kp = (uint16_t)(page_data[10] << 8);
+			*kp |= (uint16_t)(page_data[11]);
+
+			// I
+			*ki = (uint16_t)(page_data[12] << 8);
+			*ki |= (uint16_t)(page_data[13]);
+
+			// D
+			*kd = (uint16_t)(page_data[14] << 8);
+			*kd |= (uint16_t)(page_data[15]);
+		}
 private:
 	uint16_t uid;
 	uint8_t net_address;
@@ -129,7 +203,27 @@ private:
 			eeprom_emulator_read_page(0, page_data);
 			page_data[0] = (uint8_t)(uid & 0x00FF);
 			page_data[1] = (uint8_t)(uid >> 8);
-			page_data[3] = 0x03;
+			page_data[3] = ((uint8_t) 3);
+
+				// Default PID values
+			uint16_t temp = 110;	// Kp = 0.110
+			page_data[10] = (uint8_t)((temp >> 8) & 0x00FF);
+			page_data[11] = (uint8_t)(temp & 0x00FF);
+			temp = 1;				// Ki = 0.0001
+			page_data[12] = (uint8_t)((temp >> 8) & 0x00FF);
+			page_data[13] = (uint8_t)(temp & 0x00FF);
+			temp = 0;				// Kd = 0.0000
+			page_data[14] = (uint8_t)((temp >> 8) & 0x00FF);
+			page_data[15] = (uint8_t)(temp & 0x00FF);
+
+				// Ramp and Speed Default
+			temp = 400;	// ms
+			page_data[16] = (uint8_t)((temp >> 8) & 0x00FF);
+			page_data[17] = (uint8_t)(temp & 0x00FF);
+			temp = 3000;	// rpm
+			page_data[18] = (uint8_t)((temp >> 8) & 0x00FF);;
+			page_data[19] = (uint8_t)(temp & 0x00FF);
+
 			eeprom_emulator_write_page(0,page_data);
 			eeprom_emulator_commit_page_buffer();	// END UID EEPROM STORAGE
 		}

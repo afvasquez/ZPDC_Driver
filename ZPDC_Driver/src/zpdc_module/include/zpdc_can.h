@@ -15,10 +15,20 @@
 #define CAN_DISCOVERY_REQUEST		(uint8_t)('A')
 #define CAN_ORDER_UPDATE_REQUEST	(uint8_t)('B')
 #define CAN_REQUEST_LED_TOG			(uint8_t)('C')
+#define CAN_MOTOR_START				(uint8_t)('D')
+#define CAN_MOTOR_STOP				(uint8_t)('E')
+#define CAN_MOTOR_PID_TUNE			(uint8_t)('F')
+#define CAN_MOTOR_PARAM_A			(uint8_t)('G')
+#define CAN_MOTOR_PARAM_B			(uint8_t)('H')
 // Return Values
 #define CAN_DISCOVERY_RETURN		(uint8_t)('a')
 #define CAN_ORDER_UPDATE_RETURN		(uint8_t)('b')
 #define CAN_REQUEST_LED_TOG_RETURN	(uint8_t)('c')
+#define CAN_MOTOR_START_RETURN		(uint8_t)('d')
+#define CAN_MOTOR_STOP_RETURN		(uint8_t)('e')
+#define CAN_MOTOR_PID_TUNE_RETURN	(uint8_t)('f')
+#define CAN_MOTOR_PARAM_A_RETURN	(uint8_t)('g')
+#define CAN_MOTOR_PARAM_B_RETURN	(uint8_t)('h')
 	/********************************************************************/
 #define CAN_SUBNET_NETWORK_REQUEST	((uint8_t) 0)
 #define CAN_SUBNET_PARAMETER_SETUP	((uint8_t) 2)
@@ -33,6 +43,8 @@
 
 #define CAN_RX_FIFO_ID_SUBNET(value)	(uint8_t)((0x03ul & ((value) >> (CAN_TX_ELEMENT_T0_STANDARD_ID_Pos + 7))))
 #define CAN_RX_FIFO_ID_DEVICE(value)	(uint8_t)((0x03ul & ((value) >> (CAN_TX_ELEMENT_T0_STANDARD_ID_Pos + 9))))
+
+#include "zpdc_bldc.h"
 
 /************************************************************************/
 /*  TYPE DEFINITIONS FOR NETWORK DEVICE TABLE                           */
@@ -73,8 +85,9 @@ public:
 
 	void send(uint8_t length, uint8_t device, uint8_t sub_net, uint8_t buffer);
 
-	void task(void);
+	void assignMotor(motor_controller *m) { motor = m; }
 
+	void task(void);
 	void callback(void);
 private:
 	NetworkDevices network_devices[100];
@@ -98,6 +111,8 @@ private:
 	// System Data
 	ZpdcSystem *system_data;
 
+	// Motor Pointer
+	motor_controller *motor;
 	
 	inline void CancelTransmission(uint32_t buffer) { can_tx_cancel_request(&can0_instance, (uint32_t)(1 << buffer)); }
 };
