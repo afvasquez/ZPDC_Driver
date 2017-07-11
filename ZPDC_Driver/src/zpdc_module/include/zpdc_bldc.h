@@ -190,6 +190,7 @@ public:
 	speed_measurement speed_sensor;
 	pid_controller pid_instance;
 	motor_ramp ramp;
+	bool motor_direction;
 private:
 	static const uint8_t cw_pattern_enable[8];
 	static const uint8_t cw_pattern_value[8];
@@ -198,7 +199,6 @@ private:
 
 	uint16_t motor_duty;
 	uint8_t a, b, c, hall_status;
-	bool motor_direction;
 	bool is_motor_running;
 
 	uint8_t getHallSensorStatus(void);

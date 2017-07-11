@@ -105,14 +105,30 @@
 						send(4, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
 					}
 				break;
+				case CAN_MOTOR_GET_PARAMA:
+					if ((rx_element_fifo_0.data[1] == system_data->get_uid_high() && rx_element_fifo_0.data[2] == system_data->get_uid_low()) ||
+						(rx_element_fifo_0.data[1] + rx_element_fifo_0.data[2] == 0)) {	
+						tx_message_0[0] = CAN_MOTOR_GET_PARAMA_RETURN;
+						tx_message_0[1] = system_data->get_uid_high();
+						tx_message_0[2] = system_data->get_uid_low();
+						tx_message_0[3] = (uint8_t)(motor->ramp.ramp_duration >> 8);
+						tx_message_0[4] = (uint8_t)(motor->ramp.ramp_duration & 0x00FF);
+						tx_message_0[5] = (uint8_t)(motor->ramp.target_speed >> 8);
+						tx_message_0[6] = (uint8_t)(motor->ramp.target_speed & 0x00FF);
+						tx_message_0[7] = (motor->motor_direction ? 0x01 : 0x00);
+						send(8, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);
+					}
+				break;
 				case CAN_MOTOR_START:
-					if (rx_element_fifo_0.data[1] == system_data->get_uid_high() && rx_element_fifo_0.data[2] == system_data->get_uid_low()) {	
+					if ((rx_element_fifo_0.data[1] == system_data->get_uid_high() && rx_element_fifo_0.data[2] == system_data->get_uid_low()) ||
+						(rx_element_fifo_0.data[1] + rx_element_fifo_0.data[2] == 0)) {
 						if (!motor->isMotorRunning())
 							motor->setMotorRunning(true);
 						tx_message_0[0] = CAN_MOTOR_START_RETURN;
 					}
 				case CAN_MOTOR_STOP:
-					if (rx_element_fifo_0.data[1] == system_data->get_uid_high() && rx_element_fifo_0.data[2] == system_data->get_uid_low()) {
+					if ((rx_element_fifo_0.data[1] == system_data->get_uid_high() && rx_element_fifo_0.data[2] == system_data->get_uid_low()) ||
+						(rx_element_fifo_0.data[1] + rx_element_fifo_0.data[2] == 0)) {
 						if (rx_element_fifo_0.data[0] == CAN_MOTOR_STOP) {
 							if (motor->isMotorRunning())
 								motor->setMotorRunning(false);
@@ -148,6 +164,8 @@
 							system_data->store_ramp_values(&rx_element_fifo_0.data[2],
 														   &rx_element_fifo_0.data[4]);
 							system_data->read_ramp_values(&(motor->ramp.ramp_duration),&(motor->ramp.target_speed));
+							system_data->set_boolean_subpage_bit(4, 0, (rx_element_fifo_0.data[7] > 0 ? true : false));
+							motor->motor_direction = system_data->get_boolean_subpage_bit(4, 0);
 							tx_message_0[2] = 1;	// OK
 						} else tx_message_0[2] = 0;	// FAIL
 						send(3, system_data->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_0);

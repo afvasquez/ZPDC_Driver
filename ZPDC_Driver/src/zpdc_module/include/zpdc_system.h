@@ -205,6 +205,9 @@ private:
 			page_data[1] = (uint8_t)(uid >> 8);
 			page_data[3] = ((uint8_t) 3);
 
+				// Completely reset - Page 4 Register
+			page_data[4] = (uint8_t)0;
+
 				// Default PID values
 			uint16_t temp = 110;	// Kp = 0.110
 			page_data[10] = (uint8_t)((temp >> 8) & 0x00FF);
