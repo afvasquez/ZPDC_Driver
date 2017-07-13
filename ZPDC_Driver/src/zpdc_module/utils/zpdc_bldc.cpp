@@ -10,10 +10,12 @@
  #define SELECTED_SPEED 4824
  #define SELECTED_RAMP	400
 
- const uint8_t motor_controller::cw_pattern_enable[8] = { 0x66, 0x55, 0x55, 0x33, 0x66, 0x33, 0x77, 0x77 };
- const uint8_t motor_controller::cw_pattern_value[8] =  { 0x20, 0x40, 0x10, 0x10, 0x40, 0x20, 0x70, 0x00 };
- const uint8_t motor_controller::ccw_pattern_enable[6] = { 0x33, 0x66, 0x33, 0x55, 0x55, 0x66 };
- const uint8_t motor_controller::ccw_pattern_value[6] =  { 0x20, 0x40, 0x10, 0x10, 0x40, 0x20 };
+ //const uint8_t motor_controller::cw_pattern_enable[8] = { 0x66, 0x55, 0x55, 0x33, 0x66, 0x33, 0x77, 0x77 };
+ //const uint8_t motor_controller::cw_pattern_value[8] =  { 0x20, 0x40, 0x10, 0x10, 0x40, 0x20, 0x70, 0x00 };
+ const uint8_t motor_controller::cw_pattern_enable[8] = { 0x66, 0x55, 0x66, 0x33, 0x33, 0x55, 0x77, 0x77 };
+ const uint8_t motor_controller::cw_pattern_value[8] =  { 0x40, 0x10, 0x20, 0x20, 0x10, 0x40, 0x70, 0x00 };
+ const uint8_t motor_controller::ccw_pattern_enable[6] = { 0x55, 0x33, 0x33, 0x66, 0x55, 0x66 };
+ const uint8_t motor_controller::ccw_pattern_value[6] =  { 0x40, 0x10, 0x20, 0x20, 0x10, 0x40 };
 
  motor_controller::motor_controller(ZpdcSystem *zpdc_system, const MotorOneParameters *mot_pars) {
 	struct extint_chan_conf chan_config;
@@ -131,18 +133,29 @@
 	force_motor_commutation();
 	speed_sensor.get_speed_measurement_callback();
  }
+
+ volatile uint8_t enable_setting;
+ volatile uint8_t value_setting;
  void motor_controller::force_motor_commutation(void) {
 	hall_status = getHallSensorStatus();
 
 	switch (motor_status) {
 		case MOTOR_STATUS_RUN:
 		if (hall_status > 0) {
-			if (motor_direction)
-				tcc_instance.hw->PATTBUF.reg = TCC_PATTBUF_PGEB(ccw_pattern_enable[hall_status-1]) |
-											   TCC_PATTBUF_PGVB(ccw_pattern_value[hall_status-1]);
-			else
+			if (motor_direction) {
+				enable_setting = ccw_pattern_enable[hall_status-1];
+				value_setting = ccw_pattern_value[hall_status-1];
+
+				tcc_instance.hw->PATTBUF.reg = TCC_PATTBUF_PGEB(enable_setting) |
+											   TCC_PATTBUF_PGVB(value_setting);
+				
+			}
+			else {
 				tcc_instance.hw->PATTBUF.reg = TCC_PATTBUF_PGEB(cw_pattern_enable[hall_status-1]) |
 											   TCC_PATTBUF_PGVB(cw_pattern_value[hall_status-1]);
+				enable_setting = cw_pattern_enable[hall_status-1];
+				value_setting = cw_pattern_value[hall_status-1];
+			}
 		} else {
 			setMotorDuty(0);
 			tcc_instance.hw->PATTBUF.reg = TCC_PATTBUF_PGEB(cw_pattern_enable[MOTOR_FREEWHEEL]) |
@@ -164,10 +177,19 @@
 
 	tcc_force_double_buffer_update(&tcc_instance);
  }
+
+ volatile uint8_t last_two_revolutions[13];
+ volatile uint8_t revolution_counter = 0;
+
  uint8_t motor_controller::getHallSensorStatus(void) {
 	uint8_t hall_code = (port_pin_get_input_level(c) ? 0x04 : 0x00) | 
 						(port_pin_get_input_level(b) ? 0x02 : 0x00) | 
 						(port_pin_get_input_level(a) ? 0x01 : 0x00);
+
+	last_two_revolutions[revolution_counter++] = hall_code;
+	if (revolution_counter > 12) {
+		revolution_counter = 0;
+	}
 
 	if ((hall_code < 1) || (hall_code > 6)) hall_code = 0;
 	return hall_code;
