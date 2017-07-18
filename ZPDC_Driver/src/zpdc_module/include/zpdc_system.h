@@ -209,18 +209,18 @@ private:
 			page_data[4] = (uint8_t)0;
 
 				// Default PID values
-			uint16_t temp = 110;	// Kp = 0.110
+			uint16_t temp = 50;	// Kp = 0.110
 			page_data[10] = (uint8_t)((temp >> 8) & 0x00FF);
 			page_data[11] = (uint8_t)(temp & 0x00FF);
-			temp = 1;				// Ki = 0.0001
+			temp = 4;				// Ki = 0.0001
 			page_data[12] = (uint8_t)((temp >> 8) & 0x00FF);
 			page_data[13] = (uint8_t)(temp & 0x00FF);
-			temp = 0;				// Kd = 0.0000
+			temp = 32;				// Kd = 0.0000
 			page_data[14] = (uint8_t)((temp >> 8) & 0x00FF);
 			page_data[15] = (uint8_t)(temp & 0x00FF);
 
 				// Ramp and Speed Default
-			temp = 400;	// ms
+			temp = 1000;	// ms
 			page_data[16] = (uint8_t)((temp >> 8) & 0x00FF);
 			page_data[17] = (uint8_t)(temp & 0x00FF);
 			temp = 3000;	// rpm
