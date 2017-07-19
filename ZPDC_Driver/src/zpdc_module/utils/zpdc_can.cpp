@@ -203,7 +203,8 @@
 
 	tx_element.T0.reg |= CAN_TX_ELEMENT_T0_STANDARD_ID((device << 9) | (sub_net << 7) | ((uint8_t) ((system_data->get_uid() >> 1) & 0x7F)));
 	tx_element.T1.bit.DLC = (uint32_t)length;
-	for (uint8_t i=0; i<length; i++) tx_element.data[i] = tx_message_0[i];
+	if (buffer == CAN_BUFFER_0) for (uint8_t i=0; i<length; i++) tx_element.data[i] = tx_message_0[i];
+	else for (uint8_t i=0; i<length; i++) tx_element.data[i] = tx_message_1[i];
 	can_set_tx_buffer_element(&can0_instance, &tx_element, (uint32_t)buffer);
 	can_tx_transfer_request(&can0_instance, (uint32_t)(1 << buffer));
 	//if (can_tx_transfer_request(&can0_instance, (uint32_t)(1 << buffer)) == STATUS_OK) port_pin_set_output_level(PIN_PA07, true);

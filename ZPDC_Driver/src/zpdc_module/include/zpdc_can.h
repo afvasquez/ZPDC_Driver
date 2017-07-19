@@ -21,6 +21,7 @@
 #define CAN_MOTOR_PID_TUNE			(uint8_t)('G')
 #define CAN_MOTOR_PARAM_A			(uint8_t)('H')
 #define CAN_MOTOR_PARAM_B			(uint8_t)('I')
+#define CAN_MOTOR_STATREPA			(uint8_t)('J')
 // Return Values
 #define CAN_DISCOVERY_RETURN		(uint8_t)('a')
 #define CAN_ORDER_UPDATE_RETURN		(uint8_t)('b')
@@ -31,6 +32,7 @@
 #define CAN_MOTOR_PID_TUNE_RETURN	(uint8_t)('g')
 #define CAN_MOTOR_PARAM_A_RETURN	(uint8_t)('h')
 #define CAN_MOTOR_PARAM_B_RETURN	(uint8_t)('i')
+#define CAN_MOTOR_STATREPA_RETURN	(uint8_t)('j')
 	/********************************************************************/
 #define CAN_SUBNET_NETWORK_REQUEST	((uint8_t) 0)
 #define CAN_SUBNET_PARAMETER_SETUP	((uint8_t) 2)
@@ -91,6 +93,8 @@ public:
 
 	void task(void);
 	void callback(void);
+
+	uint8_t tx_message_1[CONF_CAN_ELEMENT_DATA_SIZE];
 private:
 	NetworkDevices network_devices[100];
 	uint8_t network_size;
@@ -103,7 +107,6 @@ private:
 	// Data Variables
 		// TX
 	uint8_t tx_message_0[CONF_CAN_ELEMENT_DATA_SIZE];
-	uint8_t tx_message_1[CONF_CAN_ELEMENT_DATA_SIZE];
 		// RX
 	volatile uint8_t standard_receive_index;
 	volatile uint8_t extended_receive_index;

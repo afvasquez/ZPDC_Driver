@@ -18,6 +18,8 @@
 
 void extint_callback_wrapper(void);
 void speed_measurement_timer_callback(struct tc_module *const module_inst);
+void adc_module_callback(struct adc_module *const module_inst);
+void stall_overcurrent_timer_callback(struct tc_module *const module_inst);
 void pid_loop_timer_callback(struct tc_module *const module_inst);
 
 /* System Data */

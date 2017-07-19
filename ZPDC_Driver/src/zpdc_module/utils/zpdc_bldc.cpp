@@ -17,7 +17,7 @@
  const uint8_t motor_controller::ccw_pattern_enable[6] = { 0x55, 0x33, 0x33, 0x66, 0x55, 0x66 };
  const uint8_t motor_controller::ccw_pattern_value[6] =  { 0x40, 0x10, 0x20, 0x20, 0x10, 0x40 };
 
- motor_controller::motor_controller(ZpdcSystem *zpdc_system, const MotorOneParameters *mot_pars) {
+ motor_controller::motor_controller(ZpdcSystem *zpdc_system, const MotorOneParameters *mot_pars, can_service *c_service) {
 	struct extint_chan_conf chan_config;
 	
 		// HALL Sensor A
@@ -119,13 +119,18 @@
 
 	motor_direction = zpdc_system->get_boolean_subpage_bit(4, 0);
 
-	ramp.init(this);
+	ramp.init(this, &stall_oc_monitor);
 	zpdc_system->read_ramp_values(&(ramp.ramp_duration),&(ramp.target_speed));
 	
 	pid_instance.init(&motor_one_parameters, &speed_sensor, &motor_status, this);
 	zpdc_system->read_pid_values(&(pid_instance.kp), &(pid_instance.ki), &(pid_instance.kd));
 	
 	speed_sensor.init(mot_pars, &pid_instance);
+
+	stall_oc_monitor.init(mot_pars, this);
+
+	can_instance = c_service;
+	main_system = zpdc_system;
 
 	is_motor_running = false;
  }
@@ -195,10 +200,11 @@
 	return hall_code;
  }
  
- void motor_ramp::init(motor_controller *instance) {
+ void motor_ramp::init(motor_controller *instance, stall_monitor *st_oc_instance) {
 	ramp_status = MOTOR_RAMP_IDLE;
 
 	controller_motor = instance;
+	stall_oc_monitor = st_oc_instance;
 
 	t_init("RAMP", 2, 1);
  }
@@ -241,6 +247,9 @@
 			controller_motor->motor_status = MOTOR_STATUS_RUN;
 			controller_motor->force_motor_commutation();
 			new_duty = 0;
+
+				// Start ADC - Current Protection
+			stall_oc_monitor->start_adc_reader();
 
 			run_start = true;
 
@@ -395,6 +404,7 @@
 			speed_sensor->get_speed();
 
 			if (speed_sensor->get_pid_flag()) {
+				portENTER_CRITICAL();
 				pid_error = setpoint - speed_sensor->measured_speed;
 
 				if (pid_error != 0) {
@@ -419,7 +429,11 @@
 						controller->setMotorDuty((uint16_t) 0);
 				}
 
+				pid_time_delta = 0;
+				tc_set_count_value(&timer_module, 0);
+
 				pid_previous_error = pid_error;
+				portEXIT_CRITICAL();
 			}
 		}
 	}
@@ -442,4 +456,116 @@
 	 speed_sensor->is_measurement_new = true;
 
 	 tc_set_count_value(&timer_module, 0);
+ }
+
+ void stall_monitor::init(const MotorOneParameters *mot_pars, motor_controller *mc) {
+	struct tc_config config_tc;
+	tc_get_config_defaults(&config_tc);
+
+	config_tc.clock_source = GCLK_GENERATOR_4;
+	config_tc.clock_prescaler = TC_CLOCK_PRESCALER_DIV1;
+	config_tc.counter_size = TC_COUNTER_SIZE_16BIT;
+	config_tc.counter_16_bit.compare_capture_channel[0] = 39995;
+
+	tc_init(&timer_module, mot_pars->stall_oc_module, &config_tc);
+	tc_enable(&timer_module);
+
+	tc_register_callback(&timer_module, mot_pars->soc_callback, TC_CALLBACK_CC_CHANNEL0);
+	tc_enable_callback(&timer_module, TC_CALLBACK_CC_CHANNEL0);
+
+		/* Configuration Variable */
+	struct adc_config config_adc;
+		/* Default ADC Configuration */
+	adc_get_config_defaults(&config_adc);
+		
+	// ### SAM-D21 and MCV v1 Board ADC Module Configuration
+		/* Voltage Gain Factor */
+	//config_adc.gain_factor = ADC_GAIN_FACTOR_1X;				// Seems to get voltage divided by 2
+		/* Module Clock Source */
+	config_adc.clock_source = GCLK_GENERATOR_4;					// Select DPLL @48MHz with 12 Native Prescaler
+		/* In-Module Pre-scaler */
+	config_adc.clock_prescaler = ADC_CLOCK_PRESCALER_DIV4;		// Divide by 4 Module Pre-Scaler
+		/* Module Voltage Reference */
+	config_adc.reference = ADC_REFERENCE_INTVCC1;				// Internal 1V as reference
+		/* Positive Pin Input */
+	config_adc.positive_input = ADC_POSITIVE_INPUT_PIN0;		// Positive Input at AN[0] - Board Defined
+		/* Negative Module Input - Internal I-O GND */
+	config_adc.negative_input = ADC_NEGATIVE_INPUT_GND;			// Internal Ground Connection
+		/* ADC Module Correction! ( Imperative through the DEMO ) */
+	//config_adc.correction.offset_correction = -2;				// Decrease Value by 2
+	//config_adc.correction.correction_enable = true;				// Enable Correction
+		/* Right-Adjusted Results */
+	config_adc.left_adjust = false;								// Right Adjusted Results (No Negative Values)
+		/* Custom Resolution - Due to sample accumulation */
+	config_adc.resolution = ADC_RESOLUTION_CUSTOM;				// Custom Resolution
+		/* Number Of Sample Accumulation */
+	config_adc.accumulate_samples = ADC_ACCUMULATE_SAMPLES_128;	// Collect 128 Samples in the Module
+		/* Sample Accumulation Division Factor */
+	config_adc.divide_result = ADC_DIVIDE_RESULT_128;			// Divide Collected Samples by 128
+		
+	// ### Enabling ADC Module
+		/* Initialize ADC Module */
+	adc_init(&adc_instance, mot_pars->current_adc_module, &config_adc);
+		/* Enable the ADC Module */
+	adc_enable(&adc_instance);
+		
+		// ### ADC Module Callback Setup
+		/* ADC Module Callback Register */
+	adc_register_callback(&adc_instance,						// Instance Module Holder
+							mot_pars->adc_callback,				// Callback Function Pointer
+							ADC_CALLBACK_READ_BUFFER );			// Callback Type
+		/* ADC Module Callback Enable */
+	adc_enable_callback(&adc_instance,							// Instance Module Holder
+							ADC_CALLBACK_READ_BUFFER);			// Callback Type
+
+	controller = mc;
+
+	for(uint8_t i=0; i<4; i++) adc_reading_buffer[i] = 0;
+	buffer_index = 0;
+ }
+
+ void stall_monitor::current_callback(void) {
+	if (buffer_index > 2) buffer_index = 0;
+
+	if (controller->motor_status == MOTOR_STATUS_RUN) {
+		adc_read_buffer_job(&adc_instance, &(adc_reading_buffer[buffer_index++]), 1);
+	} else {
+		for(uint8_t i=0; i<4; i++)
+			adc_reading_buffer[i] = 0;
+		buffer_index = 0;
+	}
+ }
+
+ void stall_monitor::monitor_callback(void) {
+	uint16_t current_level;
+	if ( controller->motor_status == MOTOR_STATUS_RUN ) {
+		current_level = get_current_reading();
+
+		if (current_level == 0)
+			port_pin_set_output_level(LED_ERROR, true);
+		else port_pin_set_output_level(LED_ERROR, false);
+
+		if (current_level > 32) port_pin_set_output_level(LED_WARNING, true);
+		else port_pin_set_output_level(LED_WARNING, false);
+
+		if ( current_level > 32 ) {
+			controller->motor_status = MOTOR_STATUS_FREE;
+			controller->ramp.setRampStatus(MOTOR_RAMP_IDLE);
+			controller->pid_instance.setpoint = 0;
+			controller->setMotorRunningBoolean(false);
+			controller->setMotorDuty(0);
+
+			controller->can_instance->tx_message_1[0] = CAN_MOTOR_STATREPA_RETURN;
+			controller->can_instance->tx_message_1[1] = controller->main_system->get_uid_high();
+			controller->can_instance->tx_message_1[2] = controller->main_system->get_uid_low();
+			controller->can_instance->tx_message_1[3] = 0x01;
+			controller->can_instance->send(4, controller->main_system->get_role(), CAN_SUBNET_NETWORK_REQUEST, CAN_BUFFER_1);
+		}
+	} else { 
+		port_pin_set_output_level(LED_ACTIVITY, false);
+		port_pin_set_output_level(LED_ERROR, false);
+		port_pin_set_output_level(LED_WARNING, false);
+	}
+
+	tc_set_count_value(&timer_module, 0);
  }

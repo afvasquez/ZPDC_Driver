@@ -58,21 +58,27 @@ const constexpr struct MotorOneParameters{
 	uint32_t wave_mix_p5 = PINMUX_PA15F_TCC0_WO5;
 	uint32_t wave_mix_p6 = PINMUX_PA16F_TCC0_WO6;
 
+	Adc *current_adc_module = ADC0;
 	Tc *speed_measurement_module = TC0;
+	Tc *stall_oc_module = TC2;
 	Tc *pid_timer_module = TC4;
 
 		// Callback
 	void (*ei_callback)(void) = extint_callback_wrapper;
 	void (*tsm_callback)(struct tc_module *const module_inst) = speed_measurement_timer_callback;
+	void (*soc_callback)(struct tc_module *const module_inst) = stall_overcurrent_timer_callback;
+	void (*adc_callback)(struct adc_module * const module_inst) = adc_module_callback;
 	void (*pidt_callback)(struct tc_module *const module_inst) = pid_loop_timer_callback;
 } motor_one_parameters;
 
 class motor_controller;
 class pid_controller;
+class stall_monitor;
+class can_service;
 
 class motor_ramp : Task {
 public:
-	void init(motor_controller *instance);
+	void init(motor_controller *instance, stall_monitor *st_oc_instance);
 
 	void setRampStatus(uint8_t rampStatus) { ramp_status = rampStatus; }
 	TaskHandle_t getTaskHandle(void) { return handle; }
@@ -85,9 +91,40 @@ private:
 	int16_t ramp_delta;
 	uint8_t ramp_status;
 	motor_controller *controller_motor;
+	stall_monitor *stall_oc_monitor;
 
 	uint32_t getCurrentMotorValue(void);
 	void calculate_ramp_delta(void);
+};
+
+/************************************************************************/
+/* STALL DETECTION & OVERCURRENTING PROTECTION                          */
+/************************************************************************/
+class stall_monitor {
+public:
+	void init(const MotorOneParameters *mot_pars, motor_controller *mc);
+
+	void monitor_callback(void);
+	void current_callback(void);
+	void start_adc_reader(void) {
+		adc_read_buffer_job(&adc_instance, &(adc_reading_buffer[buffer_index++]), 1);
+	}
+
+	uint16_t get_current_reading(void) {
+		uint32_t average_sum = 0;
+		
+		for(uint8_t i=0;i<3;i++)
+			average_sum += adc_reading_buffer[i];
+
+		return (uint16_t)(average_sum / 3);
+	}
+	
+	uint16_t adc_reading_buffer[4];
+private:
+	uint8_t buffer_index;
+	motor_controller *controller;
+	struct adc_module adc_instance;
+	struct tc_module timer_module;
 };
 
 /************************************************************************/
@@ -163,7 +200,7 @@ private:
 /************************************************************************/
 class motor_controller {
 public:
-	motor_controller(ZpdcSystem *zpdc_system, const MotorOneParameters *mot_pars);
+	motor_controller(ZpdcSystem *zpdc_system, const MotorOneParameters *mot_pars, can_service *c_service);
 
 	// C - Accessible
 	void hall_callback(void);
@@ -182,14 +219,22 @@ public:
 		if (motState) ramp.setRampStatus(MOTOR_RAMP_UP);
 		else ramp.setRampStatus(MOTOR_RAMP_DOWN);
 	}
+	void setMotorRunningBoolean(bool val) {
+		is_motor_running = val;
+	}
 	TaskHandle_t getRampTaskHandle(void) { return ramp.getTaskHandle(); }
 	void force_motor_commutation(void);
 
 	struct tcc_module tcc_instance;
 	uint8_t motor_status;
 	speed_measurement speed_sensor;
+	stall_monitor stall_oc_monitor;
 	pid_controller pid_instance;
 	motor_ramp ramp;
+
+	ZpdcSystem *main_system;
+	can_service *can_instance;
+
 	bool motor_direction;
 private:
 	static const uint8_t cw_pattern_enable[8];

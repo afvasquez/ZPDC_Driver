@@ -18,7 +18,7 @@ int main(void)
 	can_service can_obj(zpdc_can0_configuration, &system_data);
 	Can_Object = &can_obj;
 
-	motor_controller bldc_motor(&system_data, &motor_one_parameters);
+	motor_controller bldc_motor(&system_data, &motor_one_parameters, &can_obj);
 	Motor_Object = &bldc_motor;
 
 		// Assign motor to CAN module
@@ -37,6 +37,12 @@ void extint_callback_wrapper(void) {
 }
 void speed_measurement_timer_callback(struct tc_module *const module_inst) {
 	Motor_Object->speed_sensor.timer_callback();
+}
+void adc_module_callback(struct adc_module *const module_inst) {
+	Motor_Object->stall_oc_monitor.current_callback();
+}
+void stall_overcurrent_timer_callback(struct tc_module *const module_inst) {
+	Motor_Object->stall_oc_monitor.monitor_callback();
 }
 void pid_loop_timer_callback(struct tc_module *const module_inst) {
 	Motor_Object->pid_instance.timer_callback();
